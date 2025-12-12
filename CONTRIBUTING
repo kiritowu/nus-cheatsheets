@@ -1,0 +1,48 @@
+# Contributing
+
+Thanks for wanting to contribute to this cheatsheets repository! This document gives a short, practical guide for reporting issues, proposing changes, and submitting pull requests.
+
+## Quick summary
+- Open an issue for bugs or feature requests.
+- Fork the repo and create a branch for your change.
+- Make small, focused commits with clear messages.
+- Submit a pull request with a descriptive title and summary.
+
+## Reporting issues
+- Search existing issues first to avoid duplicates.
+- When opening a new issue, include:
+	- A short, descriptive title.
+	- Steps to reproduce (if applicable).
+	- Expected vs actual behavior.
+	- Relevant file paths or snippets.
+
+## Making changes
+- Fork the repository and create a topic branch from `main` (or the default branch):
+	- Use a short branch name describing the change, e.g. `fix/mips-typo` or `add/ma1522-formulas`.
+- Keep changes small and focused. One logical change per branch/PR makes review easier.
+- Update or add documentation where appropriate.
+
+## Submitting a pull request
+- Push your branch to your fork and open a PR against the repository's default branch.
+- In the PR description, explain:
+	- What you changed and why.
+	- Any files that reviewers should focus on.
+	- How to preview or verify the change locally (if applicable).
+- Link related issues with `Fixes #<issue-number>` when the PR resolves an issue.
+
+## Coding style and content
+- Follow the existing repository structure and naming conventions.
+- Keep formatting consistent with surrounding files. If the project uses a formatter or build tool, run it before submitting.
+- Prefer clear prose and concise commit messages. Example commit message format:
+	- `feat: short description for mips` — e.g. `fix: register table typo`
+
+## Tests and verification
+- If your change requires verification (build, preview, rendering), include brief instructions in the PR so reviewers can reproduce the results.
+
+## License and ownership
+- By contributing, you agree that your contributions will be licensed under this repository's license (see `LICENSE`).
+
+## Contact
+- If you're unsure about the best way to contribute, open an issue or contact the maintainers via the repository's issue tracker.
+
+Thanks — contributions keep this project useful and up to date!
