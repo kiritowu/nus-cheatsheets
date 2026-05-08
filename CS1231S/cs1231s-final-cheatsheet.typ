@@ -8,7 +8,7 @@
 
 #let homepage = link("https://kiritowu.github.io/")[https://kiritowu.github.io/]
 #let author = "Zhao Wu"
-#let title = "CS1231S | Cheat Sheet"
+#let title = "CS1231S Cheat Sheet, AY25/26 S2"
 
 #show: boxedsheet.with(
   title: title,
