@@ -13,6 +13,23 @@ This section list out the modules and cheetsheets available.
         <th>Cheetsheets</th>
     </tr>
     <tr>
+        <td rowspan=2>AY25/26 Sem 2</td>
+        <td>MA1521 Calculus for Computing</td>
+        <td>
+            <ul>
+                <li><a href="MA1521/final/ma1521-final-cheatsheet.pdf">Final</a></li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td>CS1231S Discrete Structures</td>
+        <td>
+            <ul>
+                <li><a href="CS1231S/cs1231s-final-cheatsheet.pdf">Final</a></li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
         <td rowspan=2>AY25/26 Sem 1</td>
         <td>MA1522 Linear Algebra for Computing</td>
         <td>
