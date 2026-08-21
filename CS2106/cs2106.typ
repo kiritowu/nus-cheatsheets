@@ -8,8 +8,8 @@
 
 
 #let homepage = link("https://kiritowu.github.io/")[https://kiritowu.github.io/]
-#let author = "Zhao Wu"
-#let title = "MA1521 Cheat Sheet, AY25/26 S2"
+#let author = "Zhao Wu and Tien Cheng"
+#let title = "CS2106 Cheatsheet, AY26/27 S1"
 
 #let my-colors = (
   rgb(190, 149, 196),
@@ -157,4 +157,134 @@
 
   2. Type 2 Hypervisor 
   #image("images/w1/type-2-hypervisor.png") 
+]
+
+= Process Abstraction
+#concept-block[
+#inline[Motivation]
+- Allowing only one program to run at a time is inefficient, so OS enables multiple programs to run concurrently.
+- To switch between programs, the OS needs to save the context of the current program and load the context of the next program.
+- A *process* (or task or job) is the OS abstraction for a running program.
+]
+== Process Context
+#concept-block[
+
+To allow multiple programs to run concurrently, the OS needs to track the context of each program. This includes:
+
+#table(
+  columns: (auto, auto, 1fr),
+  inset: 2.5pt,
+  stroke: 0.3pt,
+  align: left,
+  table.header([*Layer*], [*Component*], [*Stores*]),
+  table.cell(rowspan: 4, align: horizon)[Memory],
+  [Instructions], [program code],
+  [Data], [globals + static],
+  [Stack], [frames (calls + locals)],
+  [Heap], [dynamically allocated data],
+  table.cell(rowspan: 4, align: horizon)[Hardware],
+  [GPRs], [temporary data],
+  [PC], [next instruction address],
+  [SP], [top of stack],
+  [FP], [base of current frame],
+  table.cell(rowspan: 2, align: horizon)[OS],
+  [PID], [unique process ID],
+  [Process State], [current process state],
+)
+]
+
+== Stack Memory & Function Calls
+
+#concept-block[
+  #inline[Stack Memory]
+  - The *stack* is a region of memory used to support function calls.
+  - Each function invocation pushes a new stack frame onto the stack, while each function return pops the top stack frame.
+  - Each stack frame contains (CS2106 convention, caller-pushed first):
+
+  #table(
+    columns: (auto, auto, 1fr),
+    inset: 2.5pt,
+    stroke: 0.3pt,
+    align: left,
+    table.header([*Component*], [*Who*], [*Why*]),
+    [Arguments (only those that don't fit in registers)], [Caller], [so the callee can read its inputs],
+    [Return address (saved PC)], [Caller], [return to the right instruction after the callee returns],
+    [Saved old FP], [Callee], [restore the caller's FP before returning],
+    [Saved old SP], [Callee], [restore the caller's SP (pop this frame)],
+    [Saved callee-saved GPRs], [Callee], [only GPRs the callee modifies; protect the caller's values across the call],
+    [Local variables], [Callee], [space for the callee's own variables],
+  )
+
+  - The stack pointer (SP) points to the top of the stack
+  - The frame pointer (FP) points to the base of the current stack frame
+  - We use a frame pointer as stack pointer tracks the current top of the stack, which can move as local variables are pushed and popped. The FP is fixed so we can use fixed offset to access the arguments and local variables.
+  - Restoring the SP does not erase the stack frame, so it is important to always initialise local variables as uninitalised local variables can contain leftover values from previous calls.
+  #inline[Register Spilling]
+  - *Register Spilling*: When a function has more arguments than the number of registers, the extra arguments are spilled to the stack
+  - Even if neither functions are short of registers, the caller and caller may end up using the same registers, so we need to save the registers and restore them after the call.
+  - There are two methods to save the registers:
+    - *Callee-saved*: the callee saves the old values of the registers into its stack frame and restores them after the call
+    - Caller-saved: the caller saves needed registers into its stack frame and restores them after the call
+  - CS2106 convention: all registers are callee-saved unless otherwise specified
+  #inline[Function Calls]
+ Function invocation differs depending on the hardware and software. But in CS2106, we use the following convention:
+  1. *Function Call Preparation*:
+    1. Caller: pass parameters using register and/or stack
+    2. Caller: save return program counter onto stack
+  2. *Transfer of Control from Caller to Callee*:
+    1. Callee: *save registers used by callee, saves the old frame pointer*, saves the old stack pointer
+    2. Callee: allocate space for local variables of the callee on stack
+    3. Callee: adjust stack pointer to point to the new stack top, *adjust the frame pointer*
+  3. *Callee Function Executes* (during that time, the callee may invoke other functions, but this can be abstracted away)
+  4. *Callelee Function Returns*
+    1. Callee: place return result in register (if applicable, usually a dedicated return register)
+    2. Callee: *restore saved registers and frame pointer*, restore saved stack pointer
+  5. *Transfer of Control from Callee back to Caller using saved PC*:
+    1. Caller: utilises return result (if applicable)
+    2. Caller: continues execution of program
+
+  #image("images/w2/stack-frame.png")
+
+]
+
+== Heap Memory
+
+#concept-block[
+  #inline[Heap Memory]
+  - The *heap* is a region of memory used to store dynamically allocated data.
+  - Dynamically allocated data in C: `malloc` and `free`
+  - Dynamically allocated data cannot be stored in:
+    - Data region: the size of the data is known at compile time
+    - Stack: data may outlast the function call
+  - Heap management is harder than stack management as allocation and deallocation can happen in arbitary orders, leading to fragmentation.
+]
+
+== Process States
+
+#concept-block[
+  #inline[Process State Model]
+  #image("images/w2/state-process-model.png")
+
+  - A process can be in one of the following states:
+    - *New*: process has been created but not fully initialised/admitted to the system
+    - *Ready*: process is waiting to execute
+    - *Running*: process is currently executing
+    - *Blocked*: process is waiting for an event to occur (e.g. I/O completion, signal)
+    - *Terminated*: process has finished execution
+  
+  #inline[Multi-Process Management]
+  - With one CPU core, at most one process can be running at a time
+  - With $m$ CPU cores, at most $m$ processes can be running at a time
+  - CS2106 convention: assume one CPU core unless otherwise specified
+  - Different processes may be in different states at the same time
+
+  #inline[Process Queues]
+
+  #image("images/w2/process-queues.png")
+
+  - The OS maintains a queue of processes for each state
+    - *Ready Queue*: processes that are ready to be scheduled to run on the CPU
+    - *Blocked Queue*: processes that are waiting for an event to occur
+  - More than one process can be in the ready and blocked queues at the same time
+  - There may be separate queues for different types of blocked processes (e.g. I/O blocked, signal blocked)
 ]
