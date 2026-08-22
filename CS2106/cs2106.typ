@@ -168,7 +168,7 @@
 == Process Context
 #concept-block[
 
-To allow multiple programs to run concurrently, the OS needs to track the context of each program. This includes:
+To allow multiple programs to run concurrently, the OS manages the following components:
 
 #table(
   columns: (auto, auto, 1fr),
@@ -177,17 +177,17 @@ To allow multiple programs to run concurrently, the OS needs to track the contex
   align: left,
   table.header([*Layer*], [*Component*], [*Stores*]),
   table.cell(rowspan: 4, align: horizon)[Memory],
-  [Instructions], [program code],
-  [Data], [globals + static],
-  [Stack], [frames (calls + locals)],
-  [Heap], [dynamically allocated data],
+  [Text], [program instructions],
+  [Data], [global variables and static variables],
+  [Stack], [collection of stack frames (calls + locals)],
+  [Heap], [region of memory used to store dynamically allocated data],
   table.cell(rowspan: 4, align: horizon)[Hardware],
-  [GPRs], [temporary data],
-  [PC], [next instruction address],
-  [SP], [top of stack],
-  [FP], [base of current frame],
+  [General-Purpose Registers (GPRs)], [temporary data],
+  [Program Counter (PC)], [next instruction address],
+  [Stack Pointer (SP)], [top of stack frame address],
+  [Frame Pointer (FP)], [fixed location in stack frame address],
   table.cell(rowspan: 2, align: horizon)[OS],
-  [PID], [unique process ID],
+  [Process ID (PID)], [unique process ID],
   [Process State], [current process state],
 )
 ]
@@ -197,7 +197,7 @@ To allow multiple programs to run concurrently, the OS needs to track the contex
 #concept-block[
   #inline[Stack Memory]
   - The *stack* is a region of memory used to support function calls.
-  - Each function invocation pushes a new stack frame onto the stack, while each function return pops the top stack frame.
+  - Each function invocation *pushes a new stack frame onto the stack*, while each function return *pops the top stack frame*.
   - Each stack frame contains (CS2106 convention, caller-pushed first):
 
   #table(
@@ -206,27 +206,22 @@ To allow multiple programs to run concurrently, the OS needs to track the contex
     stroke: 0.3pt,
     align: left,
     table.header([*Component*], [*Who*], [*Why*]),
-    [Arguments (only those that don't fit in registers)], [Caller], [so the callee can read its inputs],
-    [Return address (saved PC)], [Caller], [return to the right instruction after the callee returns],
-    [Saved old FP], [Callee], [restore the caller's FP before returning],
-    [Saved old SP], [Callee], [restore the caller's SP (pop this frame)],
-    [Saved callee-saved GPRs], [Callee], [only GPRs the callee modifies; protect the caller's values across the call],
-    [Local variables], [Callee], [space for the callee's own variables],
+    [Local variables], [Callee], [Callee's own local variables],
+    [Parameters (only those that don't fit in registers)], [*Caller*], [so the callee can read the parameters of function call],
+    [Saved GPRs], [Callee], [Copy of GPRs which callee modifies; protect the caller's values across the call],
+    [Saved old SP], [Callee], [restore the caller's SP],
+    [Saved old FP], [Callee], [restore the caller's FP],
+    [Return address / Saved PC], [*Caller*], [return to the right instruction after the callee returns],
   )
 
   - The stack pointer (SP) points to the top of the stack
   - The frame pointer (FP) points to the base of the current stack frame
   - We use a frame pointer because the stack pointer tracks the current top of the stack, which can move as local variables are pushed and popped. The FP is fixed, so we can use a fixed offset to access arguments and local variables.
-  - Restoring the SP does not erase the stack frame, so always initialise local variables; uninitialised locals can contain leftover values from previous calls.
-  #inline[Register Spilling]
-  - *Register Spilling*: When a function has more arguments than the number of registers, the extra arguments are spilled to the stack
-  - Even if neither function is short of registers, the caller and callee may use the same registers, so we need to save the registers and restore them after the call.
-  - There are two methods to save the registers:
-    - *Callee-saved*: the callee saves the old values of the registers into its stack frame and restores them after the call
-    - *Caller-saved*: the caller saves needed registers into its stack frame and restores them after the call
-  - CS2106 convention: all registers are callee-saved unless otherwise specified
-  #inline[Function Calls]
-  Function invocation differs depending on the hardware and software. In CS2106, we use the following convention:
+  - Restoring the SP does not erase the stack frame, so always initialise local variables as uninitialised local variables can contain leftover values from previous calls.
+
+  #inline[Function Call Convention]
+  Function calling convention differs depending on the hardware and software. The following is an example of such convention in 2106:
+
   1. *Function Call Preparation*:
     1. Caller: pass parameters using registers and/or the stack
     2. Caller: save return program counter onto the stack
@@ -244,6 +239,13 @@ To allow multiple programs to run concurrently, the OS needs to track the contex
 
   #image("images/w2/stack-frame.png")
 
+  #inline[Register Spilling]
+  - *Register Spilling*: When a function has more arguments than the number of registers, the extra arguments are spilled to the stack
+  - Even if neither function is short of registers, the caller and callee may use the same registers, so we need to save the registers and restore them after the call.
+  - There are two methods to save the registers:
+    - *Callee-saved*: the callee saves the old values of the registers into its stack frame and restores them after the call
+    - *Caller-saved*: the caller saves needed registers into its stack frame and restores them after the call
+  - CS2106 convention: all registers are callee-saved unless otherwise specified
 ]
 
 == Heap Memory
