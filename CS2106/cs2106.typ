@@ -291,21 +291,21 @@ To allow multiple programs to run concurrently, the OS manages the following com
 ]
 == Process Control Block (PCB)
 #concept-block[
-A *Process Control Block (PCB)* or *Process Table Entry* is a data structure describe the execution context for a process, maintained by the Kernel.
+A *Process Control Block (PCB)* or *Process Table Entry* is a data structure that describes the execution context for a process, maintained by the Kernel.
 
 #image("images/w3/pcb.png")
 ]
 
 == System Calls
 #concept-block[
-  A *System Call* is API to the OS that allows user program to request services from the Kernel.
+  A *System Call* is an API to the OS that allows a user program to request services from the Kernel.
 
   #inline[Difference in OS]
   - Unix Variant:
     - Follows POSIX standards
     - Small number of calls
   - Windows Variant:
-    - Uses `Win` API accross different Windows versions
+    - Uses `Win` API across different Windows versions
     - New version of windows add more calls.
     - Huge number of calls
 
@@ -337,93 +337,192 @@ A *Process Control Block (PCB)* or *Process Table Entry* is a data structure des
 == A Case Study in Unix
 #concept-block[
 #inline[Process Abstraction]
-In Unix, an entry in PCB consists of:
+Unix process management centres on `fork()`, `exec()`, `exit()`, and `wait()`.
+
+In Unix, an entry in the PCB consists of:
   1. Identification:
-    - PID: Process ID
+    - PID: Process ID (integer identifier)
   2. Information:
-    - Process State: Running, Sleeping, Stopped, Zombie, etc.
-    - Parent PID: PID of the parent process
-    - Cumulative CPU time: Total CPU time the process has consumed
-    - etc.
+    - Process State: Running, Sleeping/Suspended, Stopped, Zombie, etc.
+    - Parent PID (PPID)
+    - Cumulative CPU time
+    - Other accounting and resource-management information
+
+Use `ps` (process status) to inspect process information; `man ps` for options.
 
 === Process Creation
+#inline[Unix vs Windows]
+- *Windows*: spawn a new process in (pretty much) a single syscall — path, arguments, etc.
+- *Unix*: `fork()` clones the current process (new PID; continues from the instruction after `fork()`), then `exec()` replaces the image (discards old text/data/stack and execution state).
+
 #inline[`fork()`]
-*`fork()`* creates a new process by duplicating the current executable image.
+*`int fork()`* is the primary Unix mechanism for creating a process. It creates a child from the currently executing parent.
 
-- A forked process
-  - Shares the same code, address space, open files, etc.
-  - Differs only in its own process ID (PID) and parent process ID (PPID).
-
-- Returns 0 in child process and the PID of the child process in the parent process.
+- Both parent and child continue from *immediately after* the `fork()` call.
+- Child is initially an *almost exact duplicate*:
+  - Same code and *initial* address-space *contents* (conceptually duplicated, *not* shared)
+  - Copied register and execution context
+  - Different PID and PPID
+  - Different `fork()` return value: parent receives the child's PID; child receives `0`
 
 ```c
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-int main() {
-  int result = fork();
-  if (result != 0) { // 0 means child process, non-zero means parent process
-    printf("P:My Id is %i\n", getpid());
-    printf("P:Child Id is %i\n", result);
-  } else {
-    printf("C:My Id is %i\n", getpid());
-    printf("C:Parent Id is %i\n", getppid());
-  }
-}
-
-// STDOUT:
-// P:My Id is 1234
-// P:Child Id is 5678
-// C:My Id is 5678
-// C:Parent Id is 1234
+printf("I am ONE\n");
+fork(); // second process spawned; both continue from here
+printf("I am seeing DOUBLE\n");
+// I am ONE
+// I am seeing DOUBLE
+// I am seeing DOUBLE
 ```
+
+#inline[Using `fork()`'s return value]
+Parent and child execute the same instructions after `fork()`. Use the return value to assign distinct work:
+- `result != 0` — parent (can continue accepting work)
+- `result == 0` — child (performs a separate task)
+
+```c
+int result = fork();
+if (result != 0) { // parent
+  printf("P:My Id is %i\n", getpid());
+  printf("P:Child Id is %i\n", result);
+} else { // child
+  printf("C:My Id is %i\n", getpid());
+  printf("C:Parent Id is %i\n", getppid());
+}
+// P:My Id is 1234 / P:Child Id is 5678
+// C:My Id is 5678 / C:Parent Id is 1234
+```
+
+#inline[Nondeterministic scheduling]
+- Parent/child order is *nondeterministic*: parent first, child first, or interleaved.
+- On a single core they do not execute at the exact same instant, but the scheduler may alternate.
+
+#inline[Independent Address Spaces]
+Parent and child initially *see equivalent values* after `fork()`, but do *not* share ordinary memory.
+- Stack, heap, data, and code image are *conceptually duplicated*.
+- Modifying a variable in one process does *not* modify the other.
+- Open files and working directory are inherited (shared kernel resources), not the address space.
+- If `var` starts as `1234`, parent can increment its copy while child decrements its own. Print order may vary; each process's private value changes independently.
+
+=== `exec()`
+#inline[`exec()` replaces the process image]
+By itself, `fork()` only duplicates the current program. `exec()` *replaces* the current process image:
+- Replaces current code and data with a new executable
+- Begins at the new program's entry point
+- Discards the old stack and execution state
+- *Retains the same PID* and broader process identity
+- Variants: `execl`, `execv`, `execve`, `execlp`, `execvp`
+- *Successful `exec()` does not return* — the old image no longer exists
+
+#inline[Command-Line Arguments]
+`int main(int argc, char *argv[])`
+- `argc`: number of arguments, *including* the program name
+- `argv`: array of C strings; `argv[0]` is conventionally the executable name
 
 #inline[`execl()`]
+`execl(path, arg0, ..., NULL)` supplies the executable path, the argument list, and a final `NULL`.
 
 ```c
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-int main() {
-  execl("/bin/ls", "ls", "-l", NULL); // NULL denotes the end of the argument list
-  return 0;
-}
+execl("/bin/ls", "ls", "-al", NULL); // replaces current program with ls -al
+// NULL marks the end of the argument list
 ```
-#inline[`init()` and Process Tree]
 
-*`init()`* is the first process created by the kernel.
-- It is the parent of all other processes.
-- It is a system process that is responsible for starting the system and managing the system services.
+#inline[The `fork()` + `exec()` Pattern]
+Standard Unix pattern for launching a new program:
+1. Parent calls `fork()` to create a child
+2. Child calls `exec()` to run the requested executable
+3. Parent remains available to continue its own work
+
+Shells use this: shell forks; child execs the command; shell can later `wait()` for the child.
+
+#inline[`init` and Process Tree]
+A process can only be created by forking an existing process, so Unix processes form a *process tree*.
+- Root is *init*: created by the kernel during boot, traditionally *PID 1*
+- Common ancestor of user processes; typically spawns OS/system programs
+- Adopts orphaned processes
+- Implementation differs by OS; on many Unix systems `init` is a symlink (e.g. to `systemd`)
+- *Cannot be killed* even though it runs in user space; if it crashes → *kernel panic*
 
 === Process Termination
 
 #inline[`exit()`]
-*`exit(int status)`* terminates the current process with a status code.
+*`exit(int status)`* terminates the current process. *Does not return*.
 
-- Status code is an integer passed to the parent process.
-  - If the status code is 0, the process terminated successfully.
-  - If the status code is non-zero, the process terminated abnormally.
+- `exit(0)`: normal/successful termination
+- Non-zero: error or abnormal condition
+- Returning from `main()` *implicitly* invokes `exit()`; `main`'s return value becomes the exit status
+- Open output streams are flushed; file descriptors are released
 
 - On process `exit()`:
-  - Process state is set to *Zombie* state.
-  - While most system resources are released by the OS, some basic process resources are not releasable:
-    - PID, PPID, etc.
-    - Process accounting information is not releasable.
+  - Process state is set to *Zombie*
+  - Most resources are released (e.g. file descriptors)
+  - Some information is *not releasable* (so the parent can `wait()`):
+    - PID
+    - Exit status
+    - Process accounting (e.g. CPU time)
 
-#inline[Orphan vs Zombie Processes]
-- *Orphan Process*:
-  - A process whose parent process has terminated.
-- Child termination sends signal to init, which utilizes `wait()` to cleanup
-- *Zombie Process*:
-  - A process whose parent process has not yet collected its exit status.
-  - Can fill up process table and may need a reboot to clear the table on older Unix implementations
+#inline[`wait()`]
+*`wait(int *status)`* lets a parent synchronise with a child:
+- *Blocks* until at least one child terminates
+- Returns the PID of a terminated child
+- Stores the child's exit status through `status`, unless `NULL`
+- Kernel can write into the parent's memory because it is privileged
+- Variants: `waitpid()` — wait for a specific child; `waitid()` — wait for child state changes
+- Several children ⇒ several `wait()` calls to reap them all
+
+#inline[Zombie vs Orphan]
+- *Zombie*: child that has *exited* but has not yet been *reaped* by its parent via `wait()`
+  - Cannot execute or be meaningfully killed (already dead)
+  - Remaining PCB occupies a process-table entry; too many can exhaust the table (older Unix: may need reboot)
+- *Orphan*: a *still-running* child whose parent has terminated
+  - `init` becomes its pseudo-parent
+  - When the adopted child later terminates, `init` `wait()`s and cleans up
+  - If the parent dies while the child is *already a zombie*, `init` reaps that leftover state too
+
+#inline[Parent–Child Lifetime]
+1. Parent forks a child
+2. Child optionally execs a new program
+3. Child exits and becomes a zombie
+4. Parent waits
+5. Kernel removes the child's remaining process-table entry
 
 #image("images/w3/process-state-diagram.png")
 
-#inline[Implementation issues with `fork()`]
+#inline[Unix Process States]
+Running, Sleeping/Suspended, Stopped, Zombie. Major transitions:
+- `fork()` creates a *ready* process
+- Context switch: ready → running
+- Running waiting for a resource (e.g. I/O) → suspended
+- Resource ready → suspended → ready
+- Stop/continue signals move between running/stopped and ready
+- `exit()` → zombie, then final cleanup after `wait()`
 
-- Memory duplication is expensive.
-- Copy-on-write optimization can be used to avoid unnecessary memory duplication.
+=== Implementing `fork()`
+#inline[Simplified `fork()` steps]
+1. Create the child address space
+2. Allocate a new PID
+3. Create kernel process data structures / PCB entry
+4. Copy relevant kernel environment (e.g. scheduling priority)
+5. Initialise child PID, PPID, and CPU accounting
+6. Copy program, data, heap, and stack
+7. Acquire shared system resources (open files, working directory)
+8. Initialise child hardware context by copying registers
+9. Place the child in the scheduler's ready queue
+
+A literal full memory copy is expensive (entire address space).
+
+#inline[Copy-on-Write (COW)]
+- Parent and child initially *share* memory *pages*
+- Reads continue sharing
+- A page is duplicated only when one process *writes* to it
+- Memory is organised into *pages* (consecutive ranges of locations) and managed at *page* granularity, not per byte
+
+#inline[`clone()`]
+Modern Linux provides `clone()` for partial duplication / selected resource sharing, instead of a full `fork()`-style copy.
+
+#inline[Key Unix Process System Calls]
+- `fork()` — create a child
+- `exec()` family — replace the current image
+- `exit()` — terminate and report status
+- `wait()` family — synchronise and collect termination status
+- `getpid()` / `getppid()` — current and parent PID
 ]
