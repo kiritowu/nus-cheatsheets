@@ -289,3 +289,141 @@ To allow multiple programs to run concurrently, the OS manages the following com
   - More than one process can be in the ready and blocked queues at the same time
   - There may be separate queues for different types of blocked processes (e.g. I/O blocked, signal blocked)
 ]
+== Process Control Block (PCB)
+#concept-block[
+A *Process Control Block (PCB)* or *Process Table Entry* is a data structure describe the execution context for a process, maintained by the Kernel.
+
+#image("images/w3/pcb.png")
+]
+
+== System Calls
+#concept-block[
+  A *System Call* is API to the OS that allows user program to request services from the Kernel.
+
+  #inline[Difference in OS]
+  - Unix Variant:
+    - Follows POSIX standards
+    - Small number of calls
+  - Windows Variant:
+    - Uses `Win` API accross different Windows versions
+    - New version of windows add more calls.
+    - Huge number of calls
+
+  #inline[System Call Mechanism]
+  1. User invokes the library call (e.g. `getpid()`)
+  2. Library call places the system call number into a register.
+  3. Library call invokes the *trap* instruction to switch from user mode to kernel mode.
+  4. In kernel mode, the *dispatcher* identifies the system call and passes control to the appropriate system call handler.
+  5. System call handler executes the system call
+  6. System call handler ended by restoring CPU state and return to user mode.
+  7. Library call returns the result to the user program.
+
+  #image("images/w3/system-call-mechanism.png")
+
+  #inline[Exception and Interrupt]
+
+  - *Exception*:
+    - Occurs during the execution of a program
+    - Synchronous in nature (i.e. caused by the program itself)
+    - E.g. divide by zero error or a page fault
+  - *Interrupt*:
+    - Occurs during the execution of a program
+    - Asynchronous in nature (i.e. caused by external events)
+    - E.g. hardware interrupt or a software interrupt
+
+  #image("images/w3/exception-interrupt.png")
+]
+
+== A Case Study in Unix
+#concept-block[
+#inline[Process Abstraction]
+In Unix, an entry in PCB consists of:
+  1. Identification:
+    - PID: Process ID
+  2. Information:
+    - Process State: Running, Sleeping, Stopped, Zombie, etc.
+    - Parent PID: PID of the parent process
+    - Cumulative CPU time: Total CPU time the process has consumed
+    - etc.
+
+=== Process Creation
+#inline[`fork()`]
+*`fork()`* creates a new process by duplicating the current executable image.
+
+- A forked process
+  - Shares the same code, address space, open files, etc.
+  - Differs only in its own process ID (PID) and parent process ID (PPID).
+
+- Returns 0 in child process and the PID of the child process in the parent process.
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main() {
+  int result = fork();
+  if (result != 0) { // 0 means child process, non-zero means parent process
+    printf("P:My Id is %i\n", getpid());
+    printf("P:Child Id is %i\n", result);
+  } else {
+    printf("C:My Id is %i\n", getpid());
+    printf("C:Parent Id is %i\n", getppid());
+  }
+}
+
+// STDOUT:
+// P:My Id is 1234
+// P:Child Id is 5678
+// C:My Id is 5678
+// C:Parent Id is 1234
+```
+
+#inline[`execl()`]
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main() {
+  execl("/bin/ls", "ls", "-l", NULL); // NULL denotes the end of the argument list
+  return 0;
+}
+```
+#inline[`init()` and Process Tree]
+
+*`init()`* is the first process created by the kernel.
+- It is the parent of all other processes.
+- It is a system process that is responsible for starting the system and managing the system services.
+
+=== Process Termination
+
+#inline[`exit()`]
+*`exit(int status)`* terminates the current process with a status code.
+
+- Status code is an integer passed to the parent process.
+  - If the status code is 0, the process terminated successfully.
+  - If the status code is non-zero, the process terminated abnormally.
+
+- On process `exit()`:
+  - Process state is set to *Zombie* state.
+  - While most system resources are released by the OS, some basic process resources are not releasable:
+    - PID, PPID, etc.
+    - Process accounting information is not releasable.
+
+#inline[Orphan vs Zombie Processes]
+- *Orphan Process*:
+  - A process whose parent process has terminated.
+- Child termination sends signal to init, which utilizes `wait()` to cleanup
+- *Zombie Process*:
+  - A process whose parent process has not yet collected its exit status.
+  - Can fill up process table and may need a reboot to clear the table on older Unix implementations
+
+#image("images/w3/process-state-diagram.png")
+
+#inline[Implementation issues with `fork()`]
+
+- Memory duplication is expensive.
+- Copy-on-write optimization can be used to avoid unnecessary memory duplication.
+]
