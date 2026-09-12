@@ -334,7 +334,7 @@ A *Process Control Block (PCB)* or *Process Table Entry* is a data structure tha
   #image("images/w3/exception-interrupt.png")
 ]
 
-== A Case Study in Unix
+== A Case Study of Processes in Unix
 #concept-block[
 #inline[Process Abstraction]
 Unix process management centres on `fork()`, `exec()`, `exit()`, and `wait()`.
@@ -349,14 +349,18 @@ In Unix, an entry in the PCB consists of:
     - Other accounting and resource-management information
 
 Use `ps` (process status) to inspect process information; `man ps` for options.
+]
 
-=== Process Creation
+=== Process Creation: Fork, Exec
+#concept-block[
 #inline[Unix vs Windows]
 - *Windows*: spawn a new process in (pretty much) a single syscall — path, arguments, etc.
-- *Unix*: `fork()` clones the current process (new PID; continues from the instruction after `fork()`), then `exec()` replaces the image (discards old text/data/stack and execution state).
+- *Unix*: Two-step approach:
+  1. Parent calls `fork()` clones the current process (parent continues from the instruction after `fork()`)
+  2. Child calls `exec()` to replaces the current process (child discards old text/data/stack and execution state).
 
 #inline[`fork()`]
-*`int fork()`* is the primary Unix mechanism for creating a process. It creates a child from the currently executing parent.
+*`int fork()`* is the primary Unix mechanism for creating a process. It creates a child by duplicating currently executing parent.
 
 - Both parent and child continue from *immediately after* the `fork()` call.
 - Child is initially an *almost exact duplicate*:
@@ -402,8 +406,6 @@ Parent and child initially *see equivalent values* after `fork()`, but do *not* 
 - Modifying a variable in one process does *not* modify the other.
 - Open files and working directory are inherited (shared kernel resources), not the address space.
 - If `var` starts as `1234`, parent can increment its copy while child decrements its own. Print order may vary; each process's private value changes independently.
-
-=== `exec()`
 #inline[`exec()` replaces the process image]
 By itself, `fork()` only duplicates the current program. `exec()` *replaces* the current process image:
 - Replaces current code and data with a new executable
@@ -426,14 +428,6 @@ execl("/bin/ls", "ls", "-al", NULL); // replaces current program with ls -al
 // NULL marks the end of the argument list
 ```
 
-#inline[The `fork()` + `exec()` Pattern]
-Standard Unix pattern for launching a new program:
-1. Parent calls `fork()` to create a child
-2. Child calls `exec()` to run the requested executable
-3. Parent remains available to continue its own work
-
-Shells use this: shell forks; child execs the command; shell can later `wait()` for the child.
-
 #inline[`init` and Process Tree]
 A process can only be created by forking an existing process, so Unix processes form a *process tree*.
 - Root is *init*: created by the kernel during boot, traditionally *PID 1*
@@ -441,9 +435,10 @@ A process can only be created by forking an existing process, so Unix processes 
 - Adopts orphaned processes
 - Implementation differs by OS; on many Unix systems `init` is a symlink (e.g. to `systemd`)
 - *Cannot be killed* even though it runs in user space; if it crashes → *kernel panic*
+]
 
-=== Process Termination
-
+=== Process Termination & Lifecycle
+#concept-block[
 #inline[`exit()`]
 *`exit(int status)`* terminates the current process. *Does not return*.
 
@@ -461,13 +456,14 @@ A process can only be created by forking an existing process, so Unix processes 
     - Process accounting (e.g. CPU time)
 
 #inline[`wait()`]
-*`wait(int *status)`* lets a parent synchronise with a child:
+*`wait(int *status)`* lets a parent synchronise with any child(s):
 - *Blocks* until at least one child terminates
 - Returns the PID of a terminated child
 - Stores the child's exit status through `status`, unless `NULL`
 - Kernel can write into the parent's memory because it is privileged
-- Variants: `waitpid()` — wait for a specific child; `waitid()` — wait for child state changes
-- Several children ⇒ several `wait()` calls to reap them all
+- Variants:
+  - `waitpid()` — wait for a specific child
+  - `waitid()` — wait for child state changes
 
 #inline[Zombie vs Orphan]
 - *Zombie*: child that has *exited* but has not yet been *reaped* by its parent via `wait()`
@@ -496,33 +492,4 @@ Running, Sleeping/Suspended, Stopped, Zombie. Major transitions:
 - Stop/continue signals move between running/stopped and ready
 - `exit()` → zombie, then final cleanup after `wait()`
 
-=== Implementing `fork()`
-#inline[Simplified `fork()` steps]
-1. Create the child address space
-2. Allocate a new PID
-3. Create kernel process data structures / PCB entry
-4. Copy relevant kernel environment (e.g. scheduling priority)
-5. Initialise child PID, PPID, and CPU accounting
-6. Copy program, data, heap, and stack
-7. Acquire shared system resources (open files, working directory)
-8. Initialise child hardware context by copying registers
-9. Place the child in the scheduler's ready queue
-
-A literal full memory copy is expensive (entire address space).
-
-#inline[Copy-on-Write (COW)]
-- Parent and child initially *share* memory *pages*
-- Reads continue sharing
-- A page is duplicated only when one process *writes* to it
-- Memory is organised into *pages* (consecutive ranges of locations) and managed at *page* granularity, not per byte
-
-#inline[`clone()`]
-Modern Linux provides `clone()` for partial duplication / selected resource sharing, instead of a full `fork()`-style copy.
-
-#inline[Key Unix Process System Calls]
-- `fork()` — create a child
-- `exec()` family — replace the current image
-- `exit()` — terminate and report status
-- `wait()` family — synchronise and collect termination status
-- `getpid()` / `getppid()` — current and parent PID
 ]
