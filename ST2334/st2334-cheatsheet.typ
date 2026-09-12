@@ -223,7 +223,7 @@
 
   Suppose an experiment is repeated n times and event A occurs m times. The relative frequency of A is given by:
   $
-    P(A) = lim_{n -> infinity} frac{m}{n}
+    P(A) = lim_{n -> infinity} m / n
   $
 
   As n increases, the relative frequency of A approaches the probability of A.
@@ -293,3 +293,190 @@
       ],
     )]
 ]
+== Conditional Probability
+
+#concept-block[
+  - *Conditional Probability* ($P(A | B)$)
+  Probability of event A occurring given that event B has occurred.
+
+  #inline[Definition of Conditional Probability]
+  $
+    P(A | B) = P(A inter B) / P(B)
+  $
+
+  #inline[Simpson's Paradox]
+  A phenomenon where a trend appears in different groups of data but disappears or reverses when the groups are combined. Or formally,
+  $
+    P(A | B inter C_i) >= P(A | B' inter C_i) forall i
+  "but"
+    P(A | B ) < P(A | B')
+  $
+
+  #inline[Multiplication Rule]
+  $
+    P(A inter B) = P(A | B) P(B) "if" P(B) > 0 \
+    "or" P(A inter B) = P(B | A) P(A) "if" P(A) > 0
+  $
+
+  #inline[Inverse Probability Formula]
+  $
+    P(A|B) = (P(A)P(B|A)) / P(B)
+  $
+]
+
+== Independence
+#concept-block[
+  Events A and B are independent, $A perp B <=>$ 
+  $
+    P(A inter B) = P(A) P(B)
+  $
+
+  Tautologies:
+  - Suppose P(A) > 0 and P(B) > 0, If $A perp B$, then $A$ and $B$ are not mutually exclusive (aka $A inter B != emptyset$)
+  - Suppose P(A) > 0 and P(B) > 0, If $A$ and $B$ are mutually exclusive, then $A cancel(perp) B$.
+  - $S perp A$ for all events $A$
+  - $emptyset perp A$ for all events $A$
+  - If $A perp B$, then $A perp B'$, $A' perp B$, $A' perp B'$
+  - Independence cannot be expressed in terms of venn diagram
+]
+
+== Law of Total Probability
+#concept-block[
+  Suppose $A_1, A_2, ..., A_n$ is a partition of the sample space $S$
+  $
+  P(B) = sum_{i=1}^n P(B inter A_i) = sum^n_{i=1} P(B | A_i) P(A_i) \
+  P(B) = P(A) P(B | A) + P(A') P(B | A')
+  $
+]
+== Bayes' Theorem
+#concept-block[
+  $
+    P(A | B) = P(A inter B) / P(B) = (P(B | A) P(A)) / (sum^n_{i=1} P(B | A_i) P(A_i)) 
+  $
+]
+
+= Random Variable
+#concept-block([
+*Random Variable* is a function that transform a sample from sample space to a real number.
+
+$
+  X: S -> RR : s in S "and" X(s) = x in RR
+$
+
+*Range space of X* is set of real numbers that satisfies
+
+$
+  R_X = {x | X(s)=x forall s in S} : R_X in RR
+$
+
+*Subsets of Sample Space*
+
+Set of all sample such that the result of its random variable is $x$.
+$
+  {X = x} = {s in S : X(s) = x}, {X=x}in S
+$
+
+Set of all sample such that the result of ites random variable is in $A$.
+$
+  {X in A} = {s in S : X(s) in A}, {X in A} in S
+$
+])
+
+== Probability Distribution
+#concept-block([
+  #inline[Probability Function (pf) or Probability Mass Function (pmf)]
+
+  *Probability Function (pf), $f(x)$* is defined as probability for ${X=x}$ if $x in R_X$
+  $
+    f(x) = cases(P(X=x) | forall x in R_X, 0 | forall x in.not R_X)
+  $
+
+
+  #inline[Discrete Random Variable]
+
+  *Discrete random variable*, the number of $R_X$ is finite or countable. $R_X = {x_1, x_2, ...}$
+  
+  A well defined pf for a discrete random variable X satisfies all the following condition:
+  1. $f(x_i) >= 0, forall x_i in R_X$
+  2. $f(x_i) = 0, forall x_i in.not R_X$
+  3. $sum^infinity_(i=1) f(x_i) = 1$ or $sum_(x_i in R_X) f(x_i) = 1$
+
+  Let $B in R_X$
+  $
+    P(X in B) = sum_(x_i in B and R_X) f(x_i)
+  $
+
+  
+  #inline[Continuous Random Variable]
+
+  *Continuous random variable*, $R_X$ is an interval or a collection of intervals
+
+  A well defined  pf for a continuous random variable X satisfies all the following condition:
+
+  1. $f(x) >= 0 forall x in R_X$ and $f(x) = 0 forall x in.not R_X$
+  2. $integral_(R_X) f(x) d x = integral^infinity_(-infinity) f(x) d x = 1$
+
+
+  For any $a$ and $b$ such that $a<= b$
+  $
+    P(a <= X <= b) = integral^b_a f(x) d x
+  $
+])
+== Cumulative Distribution Function
+#concept-block([
+  *Cumulative Distribution Function, F(x)* for any random variable X is defined as
+  $
+    F(x) = P(X <= x) = cases(f(0)+f(1)+...+f(x) "if X is discrete", integral_(-infinity)^x f(t) d t "if X is continuous")
+  $
+
+  Let $a<b$
+  $
+    P(a<= X<=b) = P(X<= b) - P(X< a) = F(b) - F(a-) \
+    F(a-) = lim_(x->a+) F(x) \
+    f(x) = F(x) - F(x-)
+  $
+
+  $
+    F(x) = integral^x_(-infinity) f(t) d t \
+    f(x) = (d)/(d x) F(x) \
+    F(b) - F(a) = P(a < x < b)
+  $
+])
+== Expectation and Variance
+#concept-block([
+#inline[Expectations]
+Expectations or mean of X is defined by
+$
+  mu_X = E(X) = sum_(x_i in R_X) x_i f(x_i) \
+  = integral_(x in R_X) x f(x) d x
+$
+
+$mu_X $ may not be in $R_X$
+
+#inline[Properties of Expectation]
+1. $E(a X + b) = a E(X) + b$
+2. $E(X + Y) = E(X)+ E(Y)$
+3. $E[g(X)] = sum_(x in R_X) g(x) f(x) = integral_(R_X) g(x) f(x) d x$
+
+#inline[Variance]
+Variance of X is defined as $mu_X^2$
+$
+  mu_X^2 = V(X) = E[(X-mu_X)^2]\
+  = sum_(x in R_X) (x-mu_X)^2 f(x) \
+  = integral^infinity_(-infinity) (x-mu_X)^2 f(x) d x \
+ = V(X) = E(X^2) - [E(X)]^2 \
+  "where" E(X^2) = sum_(x_i in R_X) x_i^2 f(x_i)
+$
+
+Alternatively,
+$
+$
+
+Standard deviation of X is defined as $sigma_X$
+$
+  sigma_X = sqrt(V(X))
+$
+
+Properties of Variance
+- $V(a X + b) = a^2 V(X)$
+])
