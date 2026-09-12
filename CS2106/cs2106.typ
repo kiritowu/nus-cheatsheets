@@ -493,3 +493,161 @@ Running, Sleeping/Suspended, Stopped, Zombie. Major transitions:
 - `exit()` → zombie, then final cleanup after `wait()`
 
 ]
+
+= Process Scheduling
+#concept-block[
+*Concurrent processes* refers to processes that progress in execution at the same time. This can be achieved by:
+- Virtual Parallelism: Pseudo-parallelism
+- Physical Parallelism: Multiple CPU / Core to allow parallel execution
+
+#inline[Timeslicing]
+Interleaving of instruction between processes is called *timeslicing*
+- Context switching operation is required before one process can handover to another process.
+- Can be done in 1-Core CPU (timesliced for instructions) or multiprocessor (timesliced for instructions & CPU core)
+#image("images/w4/time-slicing.png", width: 80%)
+]
+== Scheduling Algorithms
+#concept-block[
+#inline[Scheduling Problem]
+When there are more ready-to-run processes than available CPUs, *Scheduler* decides process should be choosen to run based on *Scheduling Algorithm*
+
+Scheduling Algorithm is tailored based on process behaviour and process environment.
+- *Process Behavior:* a typical process cycles between
+  1. CPU-activity: Compute-bound spends majority of time
+  2. IO-activity: IO-bound spends majority of time
+- *Processing Environment:*
+  1. Batch Processing: No interaction required, no need to be responsive.
+  2. Interactive (or Multiprogramming): Active user interacts with system. Should be responsive.
+  3. Real time processing: Have deadline to meet, usually periodic process.
+
+For all processing environments:
+- *Fairness*: Processes should get a fair share of CPU time and no starvation
+- *Utilization*: All parts of computing system should utilized
+
+Scheduling Algorithms:
+- *Non-preemptive (Cooperative)*: Process stayed scheduled (in running state) until it blocks or give up the CPU voluntarily.
+- *Preemptive*: Process is given a fixed time quota to run, and at the end of the time quota, the process is suspended.
+]
+
+=== Scheduling for Batch Processing
+#concept-block[
+Batched processing system has no user interaction and mostly dominated by non-preemptive scheduling.
+
+*Key criterion*:
+- Turnaround time: Total time taken (finish time - arrival time)
+- Throughput: number of tasks finished per unit time
+- CPU Utilization: Percentage of time when CPU is working on a task
+
+#inline[First Come First Serve (FCFS)]
+*Mechanisms*:
+- Tasks are stored on First-In-First-Out (FIFO) queue.
+- First task in the queue to run until task is done or task is blocked.
+- Blocked task is removed from the FIFO queue, and placed at the back of queue when it is ready.
+
+*Characteristics*:
+- Non-preemptive algorithms
+- No Starvation
+
+*Shortcomings*:
+- Convoy Effect: CPU-bound and IO-bound processes cannot be run concurrently.
+- Reordering of task can reduce average waiting time.
+#image("images/w4/fcfs.png")
+
+#inline[Shortest Job First (SJF)]
+
+*Mechanism*:
+- Select the task with the smallest total CPU time
+
+*Characteristics*:
+- Non-preemptive algorithm
+- Need to know total CPU time for a task in advance
+- Starvation is possible as algorithm is biased towards short jobs
+- Guarantees smallest average waiting time as task with shortest job always comes first
+#image("images/w4/sjf.png")
+
+*Predicting CPU Time*
+- Guess the future CPU time requirement by previous CPU-Bound phases
+$
+  "Predicted"_(n+1) = alpha "Actual"_n + (1-alpha) "Predicted"_n
+$
+
+- $"Actual"_n$: Most recent CPU time consumed
+- $"Predicted"_n$: Past history of CPU time consumed
+- $alpha$: Weight placed on recent event
+- $"Predicted"_(n+1)$: Latest prediction
+
+#inline[Shortest Remaining Time (SRT)]
+*Mechanism*:
+- Select job with shortest remaining (or expected) time
+
+*Characteristics*:
+- Preemptive algoritm
+- When a new shorter job arrives, will stop current job and switch to shorter job
+
+#image("images/w4/srt.png")
+]
+=== Scheduling for Interactive Environment
+#concept-block[
+Interactive Environment uses mostly preemptive algorithm for good response time with scheduler that runs periodically.
+
+*Key Criterion*:
+- Response time
+- Predictability
+
+#inline[Timer & Time Quantum]
+- *Interval of Timer Interrupt (ITI)*: time it takes to interrupt and invoking the OS scheduler, typically 1ms-10ms.
+- *Time Quantum*: Execution duration given to a process, that must be multiples of timer interrupt. Time Quantum could be constant or variable among the processes, typically 5ms-100ms.
+
+#image("images/w4/iti-time-quantum.png")
+
+#inline[Round Robin (RR)]
+*Mechanism*:
+- Tasks are stored on First-In-First-Out (FIFO) queue.
+- First task in the queue to run until a fixed time quantim elapsed, or task is done, or task is blocked.
+- Task is then placed at end of queue for another turn
+- Blocked task is removed from the FIFO queue, and placed at the back of queue when it is ready.
+
+*Characteristics*:
+- Preemptive algorithm (of FCFS)
+- Response time guarantee: Time taken before a task get CPU is bounded by $(n-1)q$ where $n$ is number of tasks and $q$ is quantum
+- Timer interrupt needed for scheduler to check on quantum expiry
+- Choice of time quantum duration matters:
+  - Big quantum is higher CPU utilization but longer waiting time
+  - Small quantum is bigger overhead but shorter waiting time
+
+#image("images/w4/round-robin.png")
+
+#inline[Priority Based]
+*Mechanism*:
+- Prioritise task with higher priority value.
+
+*Variants*:
+- Preemptive version
+  - Higher priority process can preempt (override) running process with lower priority
+- Non-preemptive version
+  - Late coming high priority process has to wait for next round of scheduling
+
+*Shortcomings*:
+- Low priority process may starve
+- Possible solution:
+  - Decrease the priority of currently running process after every time quantum
+  - Give the current running process a time quantum and ensure its not considered in next round of scheduling
+#image("images/w4/priority-scheduling.png")
+
+#inline[Multi-Level Feedback Queue (MLFQ)]
+*Mechanism*:
+- If Priority(A) > Priority(B): run A.
+- If Priority(A) == Priority(B): A and B runs in RR
+
+*Characteristics*:
+- Minimizes both response time for IO bound and turnaround time for CPU bound processes.
+
+#image("images/w4/mlfq.png")
+
+#inline[Lottery Scheduling]
+*Mechanism*:
+- Give out "Lottery Tickets" to different system resources (CPU Time, I/O devices)
+- When a scheduling decision is needed:
+  - A lottery ticket is randomly chosen among eligible Tickets to grant the resources
+  - In long run, a process holding X% of tickets can win X% of lottery held and use the resource X% of the time
+]
