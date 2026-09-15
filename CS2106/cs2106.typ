@@ -651,3 +651,163 @@ Interactive Environment uses mostly preemptive algorithm for good response time 
   - A lottery ticket is randomly chosen among eligible Tickets to grant the resources
   - In long run, a process holding X% of tickets can win X% of lottery held and use the resource X% of the time
 ]
+
+= Inter-Process Communication
+#concept-block[
+  *Inter-Process Communication* mechanisms is needed for transfering of information between processes.
+]
+
+== Shared-Memory
+#concept-block[
+ A shared memory region $M$ is created, which will be attached by the processes $P_1$ and $P_2$, enabling communication.
+
+  *Advantages*:
+  - Efficient: OS only needs to Create and Attach memory region
+  - Ease of use: information of any type or size can be written easily in shared memory space
+
+  *Disadvantage*:
+  - Synchronization between resources is harder
+  - Implementation is usually harder
+ 
+ #image("images/w5/shared-memory.png", width: 80%)
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/shm.h>
+
+int main() {
+  int shmid, *shm;
+
+  // Use shmget syscall to create a shared memory in
+  // IPC_PRIVATE: Create a new, private segment that only related processes (e.g. parent/child after fork) can share by passing around this shmid.
+  // Create the segment if it doesn’t exist, with Unix permissions 0600 — owner can read and write, nobody else can.
+  shmid = shmget(IPC_PRIVATE, 3 * sizeof(int), IPC_CREAT | 0600 );
+  // Exit if Memory cannot be created
+  if (shmid == -1) exit(1);
+
+  // Attach memory by initializing the pointer
+  // NULL: Let kernel choose free virtual address
+  // 0: no extra flag, default read/write access
+  shm = (int*) shmat(shmid, NULL, 0);
+  // Exit if memory cannot be attached
+  if (shm == (int*) -1) exit(1);
+
+  // Declare value not ready;
+  shm[0] = 0;
+  // Sleep while the value is ready
+  while(shm[0] == 0) {
+    sleep(3);
+  }
+
+  for (int i=0; i<3; i++) {
+    printf("Read %d from shared memory. \n", shm[i+1]);
+  }
+
+  // Detach and destroy shard memory region
+  shmdt( (char*) shm);
+  shmctl(shmid, IPC_RMID, 0);
+
+  return 0;
+}
+
+```
+]
+
+== Message Passing
+#concept-block[
+  Process $P_1$ prepare messages $M$ and send to $P_2$ using system calls, where $M$ is stored in kernel memory space. Requires extra properties like Name and Synchronization.
+
+  *Advantages*:
+  - Portable: can be implemented on diff processing environment
+  - Easier Synchronization: when sync primitives is used, sender and receiver are implicitly synchronized
+
+  *Disadvantage*:
+  - Inefficient: Requires OS intervention
+  - Extra Copying
+
+ #image("images/w5/message-passing.png", width: 80%)
+
+  #inline[Direct Communication]
+  Sender and Receiver of message explicitly name the other party (ie. unix domain socket). One-to-one communication between processes.
+
+  #inline[Indirect Communication]
+  Messages are sent / received from message storage known as mailbox or port (i.e. unix message queue). Many-to-Many communication between processes.
+
+
+  #inline[Blocking Primitives (synchronous)]
+  Receiver is blocked until message has arrived.
+
+  #inline[Non-Blocking Primitives (asynchronous)]
+  Receiver either receive the message if available or some indication that message is not ready.
+]
+
+=== Unix Pipes
+#concept-block[
+  In Unix, a process has 3 default communication channels: stdin (`scanf`), stdout (`printf`), stderr. Declared using "|".
+
+  Pipe functions as:
+    - Circular bounded byte buffer: Writers wait when buffer is full
+    - Implicit Synchronization: Readers wait when buffer is empty
+
+  Depending on Unix version, pipes may be:
+    - Half-duplex: unidirectional with one write end and one read end
+    - Full-duplex: bidirectional with any end for read and write
+
+```c
+#define READ_END 0
+#define WRITE_END 1
+
+int main()
+{
+  int pipeFd[2], pid, len;
+  char buf[100], *str = "Hello There!";
+
+  pipe( pipeFd );
+
+  if ((pid = fork()) > 0) { /* parent */
+    close(pipeFd[READ_END]);
+    write(pipeFd[WRITE_END], str, strlen(str)+1);
+    close(pipeFd[WRITE_END]);
+  } else { /* child */
+    close(pipeFd[WRITE_END]);
+    len = read(pipeFd[READ_END], buf, sizeof(buf));
+    printf("Proc %d read: %s\n", pid, buf);
+    close(pipeFd[READ_END]);
+  }
+}
+```
+]
+
+=== Unix Signal
+#concept-block[
+  Quick form of inter-process communication, sent to a process using an asynchronous notification regarding an event.
+
+  - Eg. Kill, Interrupt, Stop, Continue, Memory Error, Arithmetic Error...
+
+  ```c
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+
+void myOwnHandler( int signo )
+{
+  if (signo == SIGSEGV){
+    printf("Memory access blows up!\n");
+    exit(1);
+    }
+}
+
+int main()
+{
+  int *ip = NULL;
+
+  if (signal(SIGSEGV, myOwnHandler) == SIG_ERR)
+    printf("Failed to register handler\n");
+
+  *ip = 123;
+
+  return 0;
+}
+```
+]
