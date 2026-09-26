@@ -205,14 +205,14 @@
 
     Selection and arrangement of r objects from n objects, where order matters.
   $
-    P_r^n = frac{n!}{(n-r)!}
+    P_r^n = (n!)/((n-r)!)
   $
 
   - *Combination* ($binom(n,r)$)
 
     Selection of r objects from n objects, where order does not matter.
   $
-    binom(n,r) = frac{n!}{r!(n-r)!}
+    binom(n,r) = (n!)/(r!(n-r)!)
   $
 ]
 == Probability
@@ -384,62 +384,58 @@ $
 
 == Probability Distribution
 #concept-block([
-  #inline[Probability Function (pf) or Probability Mass Function (pmf)]
+  #inline[Probability Mass Function (pmf)]
+  *Discrete random variable*, the number of $R_X = {x_1, x_2, ...}$ is finite or countable.
 
-  *Probability Function (pf), $f(x)$* is defined as probability for ${X=x}$ if $x in R_X$
+  *pmf, $f(x)$* is defined as probability for ${X=x}$
   $
     f(x) = cases(P(X=x) | forall x in R_X, 0 | forall x in.not R_X)
   $
 
-
-  #inline[Discrete Random Variable]
-
-  *Discrete random variable*, the number of $R_X$ is finite or countable. $R_X = {x_1, x_2, ...}$
-  
-  A well defined pf for a discrete random variable X satisfies all the following condition:
-  1. $f(x_i) >= 0, forall x_i in R_X$
-  2. $f(x_i) = 0, forall x_i in.not R_X$
-  3. $sum^infinity_(i=1) f(x_i) = 1$ or $sum_(x_i in R_X) f(x_i) = 1$
+  Well-defined pmf for discrete random variable $X$:
+  1. $forall x_i in R_X, f(x_i) >= 0$
+  2. $forall x_i in.not R_X, f(x_i) = 0$
+  3. $sum^infinity_(i=1) f(x_i) = sum_(x_i in R_X) f(x_i) = 1$
 
   Let $B in R_X$
   $
     P(X in B) = sum_(x_i in B and R_X) f(x_i)
   $
 
+  #inline[Probability Density Function (pdf)]
+
+  *Continuous random variable*, $R_X in [a,b]$ is an interval or a collection of intervals
+
+  Well-defined pmf for continuous random variable $X$
+  1. $forall x in R_X,  f(x) >= 0$
+  2. $forall x in.not R_X,  f(x) = 0$
+  3. $integral_(R_X) f(x) d x = integral^infinity_(-infinity) f(x) d x = 1$
   
-  #inline[Continuous Random Variable]
-
-  *Continuous random variable*, $R_X$ is an interval or a collection of intervals
-
-  A well defined  pf for a continuous random variable X satisfies all the following condition:
-
-  1. $f(x) >= 0 forall x in R_X$ and $f(x) = 0 forall x in.not R_X$
-  2. $integral_(R_X) f(x) d x = integral^infinity_(-infinity) f(x) d x = 1$
-
-
   For any $a$ and $b$ such that $a<= b$
   $
     P(a <= X <= b) = integral^b_a f(x) d x
   $
+
+  Consequently,
+  - $P(X=x_i) = integral^(x_i)_(x_i) f(x) d x = 0 forall x_i$: Specific point is zero
+  - $P(a <= X <= b) = P(a < X < b)$: Endpoint doesn't matter
 ])
 == Cumulative Distribution Function
 #concept-block([
-  *Cumulative Distribution Function, F(x)* for any random variable X is defined as
+  *Cumulative Distribution Function (cdf), F(x)* for any random variable X is defined as
   $
     F(x) = P(X <= x) = cases(f(0)+f(1)+...+f(x) "if X is discrete", integral_(-infinity)^x f(t) d t "if X is continuous")
   $
 
-  Let $a<b$
+  Let $a<b, x in R_x$
   $
     P(a<= X<=b) = P(X<= b) - P(X< a) = F(b) - F(a-) \
-    F(a-) = lim_(x->a+) F(x) \
-    f(x) = F(x) - F(x-)
+    P(X=x) = f(x) = P(x <= X <= x) = F(x) - F(x-) 
   $
 
+  Let $F(x) = integral^x_(-infinity) f(t) d t$
   $
-    F(x) = integral^x_(-infinity) f(t) d t \
-    f(x) = (d)/(d x) F(x) \
-    F(b) - F(a) = P(a < x < b)
+    f(x) = F'(x) = (d)/(d x) integral^x_(-infinity) f(t) d t
   $
 ])
 == Expectation and Variance
@@ -447,29 +443,22 @@ $
 #inline[Expectations]
 Expectations or mean of X is defined by
 $
-  mu_X = E(X) = sum_(x_i in R_X) x_i f(x_i) \
-  = integral_(x in R_X) x f(x) d x
+  mu_X = E(X) = sum_(x_i in R_X) x_i f(x_i) 
+  = integral x f(x) d x
 $
 
-$mu_X $ may not be in $R_X$
+- $mu_X $ may not be in $R_X$
 
 #inline[Properties of Expectation]
 1. $E(a X + b) = a E(X) + b$
 2. $E(X + Y) = E(X)+ E(Y)$
-3. $E[g(X)] = sum_(x in R_X) g(x) f(x) = integral_(R_X) g(x) f(x) d x$
+3. $E[g(X)] = sum_(x in R_X) g(x) f(x) " or " integral g(x) f(x) d x$
 
 #inline[Variance]
-Variance of X is defined as $mu_X^2$
+Variance of X is defined as $sigma_X^2$
 $
-  mu_X^2 = V(X) = E[(X-mu_X)^2]\
-  = sum_(x in R_X) (x-mu_X)^2 f(x) \
-  = integral^infinity_(-infinity) (x-mu_X)^2 f(x) d x \
- = V(X) = E(X^2) - [E(X)]^2 \
-  "where" E(X^2) = sum_(x_i in R_X) x_i^2 f(x_i)
-$
-
-Alternatively,
-$
+  sigma_X^2 = V(X) = E[(X-mu_X)^2] = E(X^2) - [E(X)]^2\
+  = sum_(x in R_X) (x-mu_X)^2 f(x) " or " integral^infinity_(-infinity) (x-mu_X)^2 f(x) d x \
 $
 
 Standard deviation of X is defined as $sigma_X$
@@ -477,6 +466,105 @@ $
   sigma_X = sqrt(V(X))
 $
 
-Properties of Variance
+#inline[Properties of Variance]
 - $V(a X + b) = a^2 V(X)$
 ])
+
+= Joint Distribution
+#concept-block[
+ - *Two/n-dimentional random variable, $(X,Y)$* $= "Given " s in S, (X(s), Y(s), ...)$
+ - *Range Space* $R_(X,Y) = {(x,y) | x = X(s), y = Y(s), forall s in S}$
+ - *Discrete / Continuous* two-dimensional random variable depends if both random variable is countable and finite or not
+ 
+ #inline[Joint Probability Function]
+
+ *Joint probability (mass) function, jpf* is defined by $(x,y) in R_(X,Y)$
+ $
+   f_(X,Y) (x,y) = P(X=x, Y=y)
+ $
+
+ Well-defined jpf $X,Y$ of both discrete and continuous random variable satisfies:
+ 1. $f_(X,Y) (x,y) >= 0, forall (x,y) in R_(X,Y)$
+ 2. $f_(X,Y) (x,y) = 0, forall (x,y) in.not R_(X,Y)$
+ 3. $sum^infinity_(i=1) sum^infinity_(j=1) f_(X,Y) (x_i, y_i) = sum^infinity_(i=1) sum^infinity_(j=1) P(X = x_i, Y =y_j) = integral^infinity_(-infinity) integral^infinity_(-infinity) f_(X,Y) (x,y) d x d y = 1$
+ 4. $P((X,Y) in A) = sum sum_((x,y) in A) f_(X,Y) (x,y) = integral integral _((x,y) in D) f_(X,Y) (x,y) d y d x$ 
+]
+
+== Marginal and Conditional Distribution
+#concept-block[
+  *Marginal Probability Distribution* of X is defined as sum of $f(y)$ after fixing $X=x$
+  $
+    f_X (x) = sum_y f_(X,Y) (x,y) = integral^infinity_(-infinity) f_(X,Y) (x,y) d y
+  $
+
+  - $f_X (x)$ satisfies all properties of probability function
+
+  #inline[Conditional probability Function]
+  
+  *Conditional Probability function* of $Y$ given $X=x$ is defined as
+  $
+    f_(Y | X) (y | x) = (f_(X,Y) (x, y)) / (f_X (x))
+  $
+
+  Properties:
+  - $f_(Y | X) (y | x)$ is defined only for x such that $f_X (x) > 0$ 
+  - $f_(Y | X) ( y | x)$ is not a probability function and therefore, does not need to satisfy requirement of sum = 1
+  
+  Applications:
+  - $P(Y <= y | X = x) = integral^y_(-infinity) f_(Y|X) (t|x) d t$
+  - $E(Y | X=x) = integral^infinity_(-infinity) y f_(Y|X) (y|x) d y$ aka regression function
+]
+
+== Independent Random Variables
+#concept-block[
+  Random variable $X$ and $Y$ are independent
+  $
+    X perp Y <=> f_(X, Y) (x,y) = f_X (x) f_Y (y) \
+    <=> "both of the following holds"
+  $
+  - $R_(X,Y)$ is a *Product Space* when probability function is positive $R_(X,Y) = {(x,y) | x in R_X, y in R_Y} =  R_X times R_Y$
+  - $forall (x,y) in R_(X,Y)$
+    $
+      f_(X,Y) (x,y) = c dot g_1(x) dot g_2(y)
+    $
+    where $g_1$ depends only on $x$, $g_2$ depends only on $y$, and $c$ is constant
+
+  Suppose $X,Y$ are independent variable:
+  - $P(X in A; Y in B) = P(X in A) P (Y in B)$
+  - $P(X <= x ; Y <= y) = P(X <= x) P(Y<=y)$
+  - Let $g 1(.), g 2 (.)$ be arbitrary functions, $g 1 (X), g 2 (Y)$ are independent
+  - $f_X (x) > 0 => f_(Y | X) ( y | x) = f_Y (y)$
+]
+
+== Expectation and Covariance
+#concept-block[
+  Expectation:
+  $
+    E(g(X,Y)) = sum_x sum_y g(x,y) f_(X,Y) (x,y) = integral^infinity_(-infinity) integral^infinity_(-infinity) g(x,y) f_(X,Y) (x,y) d y d x
+  $
+
+  *Covariance*, $"cov"(X,Y)$
+  $
+    "cov"(X,Y) = sum_x sum_y (x-mu_x) (y-mu_y) f_(X,Y) (x,y) \
+    = E[(X-mu_X) (Y-mu_Y)] = E(X Y) - mu_X mu_Y
+  $
+
+  Properties:
+  - $X perp Y => "cov" (X,Y) = 0$, converse is not true
+  - $X perp Y => E(X Y) = E(X) E(Y)$
+  - $"cov"(a X + b, c Y + d) = a c dot "cov"(X,Y)$
+  - $"cov"(X,Y) = "cov"(Y,X)$
+  - $V(a X + b Y) = a^2 V(X) b^2 V(Y) + 2 a b "cov"(X,Y)$
+
+  Correlation Coefficient $rho (X,Y)$
+  $
+    rho (X,Y) = ("cov"(X,Y))/ (sigma_X sigma_Y) \
+    -1 <= rho (X,Y) <= 1
+  $
+  
+  Properties:
+  $V(X+Y) = V(X) + V(Y) + 2 "cov"(X,Y)$
+  - $V(X plus.minus Y) = V(X) + V(Y)$
+  - $V(X_1 + X_2 + ... + X_n) = V(X_1) + V(X_2) + ... + V(X_n) + 2 sum_(j>i) "cov"(X_i, X_j)$
+  - $V(X_1 plus.minus X_2) = V(X_1) + V(X_2)$
+]
