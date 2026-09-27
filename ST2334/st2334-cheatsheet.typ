@@ -86,7 +86,7 @@
     A subset B and B subset A
   $
 
-  #inline[Subset Relations]
+  #inline[Subset Relations (Selected)]
   #align(center)[
     #table(
       columns: 3,
@@ -98,63 +98,6 @@
         *Law*
       ][
         *Identities*
-      ],
-
-      [1],
-      [Commutative laws],
-      [
-        $
-          & A union B = B union A \
-          & A inter B = B inter A
-        $
-      ],
-
-      [2],
-      [Associative laws],
-      [
-        $
-          & (A union B) union C = A union (B union C) \
-          & (A inter B) inter C = A inter (B inter C)
-        $
-      ],
-
-      [3],
-      [Distributive laws],
-      [
-        $
-          & A union (B inter C) = (A union B) inter (A union C) \
-          & A inter (B union C) = (A inter B) union (A inter C)
-        $
-      ],
-
-      [4],
-      [Identity laws],
-      [
-        $
-          & A inter U = A \
-          & A inter emptyset = emptyset \
-          & A union U = U \
-          & A union emptyset = A
-        $
-      ],
-
-      [5],
-      [Complement laws],
-      [
-        $
-          & overline(overline(A)) = A \
-          & A inter overline(A) = emptyset \
-          & overline(U) = emptyset
-        $
-      ],
-
-      [6],
-      [Idempotent laws],
-      [
-        $
-          & A union A = A \
-          & A inter A = A
-        $
       ],
 
       [7],
@@ -179,58 +122,41 @@
 == Counting Methods
 #concept-block[
   #inline[Multiplication and Addition Principles]
-  - *Multiplication Principle*
-
-    A sequence of r stages with n_1, n_2, ..., n_r choices has n_1n_2...n_r outcomes.
+  - *Multiplication Principle*: Sequence of r stages
   $
     n_1 times n_2 times dot times n_r = n_1n_2 dots n_r
   $
 
-  - *Addition Principle*
-
-    k non-overlapping procedures with $n_1, n_2, ..., n_k$ outcomes have $n_1 + n_2 + ... + n_k$ outcomes in total.
+  - *Addition Principle*: k non-overlapping procedures 
   $
     n_1 + n_2 + ... + n_k = n_1 + n_2 + ... + n_k
   $
 
   #inline[Factorial, Permutations, and Combinations]
   - *Factorial* ($n!$)
-
-
   $
     n! = n(n-1)(n-2)...2 dot 1
   $
 
-  - *Permutation* ($P_r^n$)
-
-    Selection and arrangement of r objects from n objects, where order matters.
+  - *Permutation* ($P_r^n$):  Selection and arrangement of r objects from n objects
   $
     P_r^n = (n!)/((n-r)!)
   $
 
-  - *Combination* ($binom(n,r)$)
-
-    Selection of r objects from n objects, where order does not matter.
+  - *Combination* ($binom(n,r)$): Selection of r objects from n objects
   $
     binom(n,r) = (n!)/(r!(n-r)!)
   $
 ]
 == Probability
 #concept-block[
-  Probability of an event A is a measure of the likelihood of the event occurring.
+  *Probability* of an event A is a measure of the likelihood of the event occurring.
 
-  #inline[Relative Frequency]
-
-  Suppose an experiment is repeated n times and event A occurs m times. The relative frequency of A is given by:
+  *Relative frequency* of A, when experiment is repeated $n$ times and event A occurs $m$ times, approaches $P(A)$ as $n -> infinity$:
   $
     P(A) = lim_{n -> infinity} m / n
   $
 
-  As n increases, the relative frequency of A approaches the probability of A.
-
-  #inline[Axiomatic Definition of Probability]
-
-  A probability function P is a function that assigns a number P(A) to each event A in the sample space S, such that:
   $
     0 <= P(A) <= 1
   $
@@ -296,16 +222,14 @@
 == Conditional Probability
 
 #concept-block[
-  - *Conditional Probability* ($P(A | B)$)
-  Probability of event A occurring given that event B has occurred.
+  *Conditional Probability* ($P(A | B)$) is probability of A occurring given that B occurred.
 
-  #inline[Definition of Conditional Probability]
   $
-    P(A | B) = P(A inter B) / P(B)
+    P(A | B) = P(A inter B) / P(B)= (P(A)P(B|A)) / P(B)
   $
 
   #inline[Simpson's Paradox]
-  A phenomenon where a trend appears in different groups of data but disappears or reverses when the groups are combined. Or formally,
+  Phenomenon where a trend appears in different groups of data but disappears or reverses when the groups are combined. Or formally,
   $
     P(A | B inter C_i) >= P(A | B' inter C_i) forall i
   "but"
@@ -314,44 +238,36 @@
 
   #inline[Multiplication Rule]
   $
-    P(A inter B) = P(A | B) P(B) "if" P(B) > 0 \
-    "or" P(A inter B) = P(B | A) P(A) "if" P(A) > 0
-  $
-
-  #inline[Inverse Probability Formula]
-  $
-    P(A|B) = (P(A)P(B|A)) / P(B)
+    P(A inter B) = P(A | B) P(B) "if" P(B) > 0
   $
 ]
 
 == Independence
 #concept-block[
-  Events A and B are independent, $A perp B <=>$ 
+  Events A and B are *independent*, $A perp B <=>$ 
   $
     P(A inter B) = P(A) P(B)
   $
 
   Tautologies:
   - Suppose P(A) > 0 and P(B) > 0, If $A perp B$, then $A$ and $B$ are not mutually exclusive (aka $A inter B != emptyset$)
-  - Suppose P(A) > 0 and P(B) > 0, If $A$ and $B$ are mutually exclusive, then $A cancel(perp) B$.
-  - $S perp A$ for all events $A$
-  - $emptyset perp A$ for all events $A$
+  - $S perp A$ for all events $A$; $emptyset perp A$ for all events $A$
   - If $A perp B$, then $A perp B'$, $A' perp B$, $A' perp B'$
   - Independence cannot be expressed in terms of venn diagram
 ]
 
-== Law of Total Probability
-#concept-block[
-  Suppose $A_1, A_2, ..., A_n$ is a partition of the sample space $S$
-  $
-  P(B) = sum_{i=1}^n P(B inter A_i) = sum^n_{i=1} P(B | A_i) P(A_i) \
-  P(B) = P(A) P(B | A) + P(A') P(B | A')
-  $
-]
 == Bayes' Theorem
 #concept-block[
   $
     P(A | B) = P(A inter B) / P(B) = (P(B | A) P(A)) / (sum^n_{i=1} P(B | A_i) P(A_i)) 
+  $
+
+  #inline[Law of Total Probability]
+
+  Suppose $A_1, A_2, ..., A_n$ is a partition of the sample space $S$
+  $
+  P(B) = sum_{i=1}^n P(B inter A_i) = sum^n_{i=1} P(B | A_i) P(A_i) \
+  P(B) = P(A) P(B | A) + P(A') P(B | A')
   $
 ]
 
@@ -370,14 +286,8 @@ $
 $
 
 *Subsets of Sample Space*
-
-Set of all sample such that the result of its random variable is $x$.
 $
-  {X = x} = {s in S : X(s) = x}, {X=x}in S
-$
-
-Set of all sample such that the result of ites random variable is in $A$.
-$
+  {X = x} = {s in S : X(s) = x}, {X=x}in S \
   {X in A} = {s in S : X(s) in A}, {X in A} in S
 $
 ])
@@ -385,9 +295,9 @@ $
 == Probability Distribution
 #concept-block([
   #inline[Probability Mass Function (pmf)]
-  *Discrete random variable*, the number of $R_X = {x_1, x_2, ...}$ is finite or countable.
+  *Discrete random variable* $X_D$, when $R_X = {x_1, x_2, ...}$ is finite or countable.
 
-  *pmf, $f(x)$* is defined as probability for ${X=x}$
+  *pmf, $f(x)$* for ${X=x}$
   $
     f(x) = cases(P(X=x) | forall x in R_X, 0 | forall x in.not R_X)
   $
@@ -397,28 +307,23 @@ $
   2. $forall x_i in.not R_X, f(x_i) = 0$
   3. $sum^infinity_(i=1) f(x_i) = sum_(x_i in R_X) f(x_i) = 1$
 
-  Let $B in R_X$
-  $
-    P(X in B) = sum_(x_i in B and R_X) f(x_i)
-  $
-
   #inline[Probability Density Function (pdf)]
 
-  *Continuous random variable*, $R_X in [a,b]$ is an interval or a collection of intervals
+  *Continuous random variable* $X_C$, when $R_X in [a,b]$ is an interval(s).
 
-  Well-defined pmf for continuous random variable $X$
-  1. $forall x in R_X,  f(x) >= 0$
-  2. $forall x in.not R_X,  f(x) = 0$
-  3. $integral_(R_X) f(x) d x = integral^infinity_(-infinity) f(x) d x = 1$
-  
-  For any $a$ and $b$ such that $a<= b$
+  *pdf, $P(a<=X<=b)$* for any $a$ and $b$ such that $a<= b$
   $
     P(a <= X <= b) = integral^b_a f(x) d x
   $
 
-  Consequently,
-  - $P(X=x_i) = integral^(x_i)_(x_i) f(x) d x = 0 forall x_i$: Specific point is zero
-  - $P(a <= X <= b) = P(a < X < b)$: Endpoint doesn't matter
+  Well-defined pdf for continuous random variable $X$:
+  1. $forall x in R_X,  f(x) >= 0$
+  2. $forall x in.not R_X,  f(x) = 0$
+  3. $integral_(R_X) f(x) d x = 1$
+
+  Other key properties,
+  - Specific point is zero: $P(X=x_i) = integral^(x_i)_(x_i) f(x) d x = 0$
+  - Endpoint doesn't matter: $P(a <= X <= b) = P(a < X < b)$
 ])
 == Cumulative Distribution Function
 #concept-block([
@@ -427,10 +332,9 @@ $
     F(x) = P(X <= x) = cases(f(0)+f(1)+...+f(x) "if X is discrete", integral_(-infinity)^x f(t) d t "if X is continuous")
   $
 
-  Let $a<b, x in R_x$
   $
     P(a<= X<=b) = P(X<= b) - P(X< a) = F(b) - F(a-) \
-    P(X=x) = f(x) = P(x <= X <= x) = F(x) - F(x-) 
+    P(X=x) = P(x <= X <= x) = F(x) - F(x-) 
   $
 
   Let $F(x) = integral^x_(-infinity) f(t) d t$
@@ -440,44 +344,43 @@ $
 ])
 == Expectation and Variance
 #concept-block([
-#inline[Expectations]
-Expectations or mean of X is defined by
+*Expectations* or mean of X is defined by: ($mu_X $ may not be in $R_X$)
 $
   mu_X = E(X) = sum_(x_i in R_X) x_i f(x_i) 
   = integral x f(x) d x
 $
 
-- $mu_X $ may not be in $R_X$
 
-#inline[Properties of Expectation]
+Properties of Expectation:
 1. $E(a X + b) = a E(X) + b$
 2. $E(X + Y) = E(X)+ E(Y)$
 3. $E[g(X)] = sum_(x in R_X) g(x) f(x) " or " integral g(x) f(x) d x$
 
 #inline[Variance]
-Variance of X is defined as $sigma_X^2$
+*Variance* of X is defined as $sigma_X^2$
 $
   sigma_X^2 = V(X) = E[(X-mu_X)^2] = E(X^2) - [E(X)]^2\
   = sum_(x in R_X) (x-mu_X)^2 f(x) " or " integral^infinity_(-infinity) (x-mu_X)^2 f(x) d x \
 $
 
-Standard deviation of X is defined as $sigma_X$
+*Standard deviation* of X is defined as $sigma_X$
 $
   sigma_X = sqrt(V(X))
 $
 
-#inline[Properties of Variance]
+Properties of Variance:
 - $V(a X + b) = a^2 V(X)$
 ])
 
 = Joint Distribution
 #concept-block[
- - *Two/n-dimentional random variable, $(X,Y)$* $= "Given " s in S, (X(s), Y(s), ...)$
+ - *n-dimentional random variable, $(X,Y, ...)$* $= (X(s), Y(s), ...) forall s in S$
  - *Range Space* $R_(X,Y) = {(x,y) | x = X(s), y = Y(s), forall s in S}$
- - *Discrete / Continuous* two-dimensional random variable depends if both random variable is countable and finite or not
- 
- #inline[Joint Probability Function]
+ - *Discrete / Continuous* two-dimensional random variable depends if *both* random variable is countable and finite or vice-versa.
+]
 
+== Joint, Marginal and Conditional Distribution
+#concept-block[
  *Joint probability (mass) function, jpf* is defined by $(x,y) in R_(X,Y)$
  $
    f_(X,Y) (x,y) = P(X=x, Y=y)
@@ -487,11 +390,9 @@ $
  1. $f_(X,Y) (x,y) >= 0, forall (x,y) in R_(X,Y)$
  2. $f_(X,Y) (x,y) = 0, forall (x,y) in.not R_(X,Y)$
  3. $sum^infinity_(i=1) sum^infinity_(j=1) f_(X,Y) (x_i, y_i) = sum^infinity_(i=1) sum^infinity_(j=1) P(X = x_i, Y =y_j) = integral^infinity_(-infinity) integral^infinity_(-infinity) f_(X,Y) (x,y) d x d y = 1$
- 4. $P((X,Y) in A) = sum sum_((x,y) in A) f_(X,Y) (x,y) = integral integral _((x,y) in D) f_(X,Y) (x,y) d y d x$ 
-]
 
-== Marginal and Conditional Distribution
-#concept-block[
+#inline[Marginal Probability Distribution]
+
   *Marginal Probability Distribution* of X is defined as sum of $f(y)$ after fixing $X=x$
   $
     f_X (x) = sum_y f_(X,Y) (x,y) = integral^infinity_(-infinity) f_(X,Y) (x,y) d y
@@ -506,39 +407,39 @@ $
     f_(Y | X) (y | x) = (f_(X,Y) (x, y)) / (f_X (x))
   $
 
-  Properties:
-  - $f_(Y | X) (y | x)$ is defined only for x such that $f_X (x) > 0$ 
-  - $f_(Y | X) ( y | x)$ is not a probability function and therefore, does not need to satisfy requirement of sum = 1
+  - $f_(Y | X) (y | x)$ is defined only for $x$ such that $f_X (x) > 0$ 
+  - $f_(Y | X) ( y | x)$ is not a probability function and therefore, sum $!=$ 1
   
   Applications:
   - $P(Y <= y | X = x) = integral^y_(-infinity) f_(Y|X) (t|x) d t$
-  - $E(Y | X=x) = integral^infinity_(-infinity) y f_(Y|X) (y|x) d y$ aka regression function
+  - Regression function $E(Y | X=x) = integral^infinity_(-infinity) y f_(Y|X) (y|x) d y$
+  
 ]
 
 == Independent Random Variables
 #concept-block[
-  Random variable $X$ and $Y$ are independent
+  Random variable $X perp Y$ are *independent* $<=>$
   $
-    X perp Y <=> f_(X, Y) (x,y) = f_X (x) f_Y (y) \
+    f_(X, Y) (x,y) = f_X (x) f_Y (y) \
     <=> "both of the following holds"
   $
-  - $R_(X,Y)$ is a *Product Space* when probability function is positive $R_(X,Y) = {(x,y) | x in R_X, y in R_Y} =  R_X times R_Y$
-  - $forall (x,y) in R_(X,Y)$
+  1. $R_(X,Y)$ spans *Product Space* $R_(X,Y) = {(x,y) | x in R_X, y in R_Y} =  R_X times R_Y$, when probability function is positive.
+  2. $forall (x,y) in R_(X,Y)$
     $
       f_(X,Y) (x,y) = c dot g_1(x) dot g_2(y)
     $
     where $g_1$ depends only on $x$, $g_2$ depends only on $y$, and $c$ is constant
 
-  Suppose $X,Y$ are independent variable:
+  Let $X perp Y$
   - $P(X in A; Y in B) = P(X in A) P (Y in B)$
   - $P(X <= x ; Y <= y) = P(X <= x) P(Y<=y)$
   - Let $g 1(.), g 2 (.)$ be arbitrary functions, $g 1 (X), g 2 (Y)$ are independent
   - $f_X (x) > 0 => f_(Y | X) ( y | x) = f_Y (y)$
 ]
 
-== Expectation and Covariance
+== Expectation, Covariance and Correlation Coefficient
 #concept-block[
-  Expectation:
+  *Expectation*, $E(g(X,Y))$:
   $
     E(g(X,Y)) = sum_x sum_y g(x,y) f_(X,Y) (x,y) = integral^infinity_(-infinity) integral^infinity_(-infinity) g(x,y) f_(X,Y) (x,y) d y d x
   $
@@ -549,22 +450,149 @@ $
     = E[(X-mu_X) (Y-mu_Y)] = E(X Y) - mu_X mu_Y
   $
 
-  Properties:
+  Properties of covariance:
   - $X perp Y => "cov" (X,Y) = 0$, converse is not true
   - $X perp Y => E(X Y) = E(X) E(Y)$
   - $"cov"(a X + b, c Y + d) = a c dot "cov"(X,Y)$
   - $"cov"(X,Y) = "cov"(Y,X)$
   - $V(a X + b Y) = a^2 V(X) b^2 V(Y) + 2 a b "cov"(X,Y)$
 
-  Correlation Coefficient $rho (X,Y)$
+
+  *Correlation Coefficient*, $rho (X,Y)$
   $
-    rho (X,Y) = ("cov"(X,Y))/ (sigma_X sigma_Y) \
+    rho (X,Y) = ("cov"(X,Y))/ (sigma_X sigma_Y), 
     -1 <= rho (X,Y) <= 1
   $
   
-  Properties:
-  $V(X+Y) = V(X) + V(Y) + 2 "cov"(X,Y)$
+  Properties of joint-variance:
+  - $V(X+Y) = V(X) + V(Y) + 2 "cov"(X,Y)$
   - $V(X plus.minus Y) = V(X) + V(Y)$
   - $V(X_1 + X_2 + ... + X_n) = V(X_1) + V(X_2) + ... + V(X_n) + 2 sum_(j>i) "cov"(X_i, X_j)$
   - $V(X_1 plus.minus X_2) = V(X_1) + V(X_2)$
+]
+
+= Probability Distribution
+== Discrete Probability Distribution
+#concept-block[
+
+  #table(columns: 5,
+  [Distribution Name], [X], [pmf], [E(x)], [V(x)],
+  [Discrete uniform distribution, U(k)], [none], [$f(x) = cases(1/k forall x in R_x, 0 "otherwise")$], [$1/k sum^k_(i=1) x_i$], [$(1/k )sum^k_(i=1)x_i^2 - mu_X^2$],
+  [Bernoulli Trial], [$X=cases(1 "if boleh", 0 "if fail")$], [$f(x) = p^(x) (1-p)^(1-x)$], [$p$], [$p q = p(1-p)$],
+  [Binomial Distribution, $"Bin"(n,p)$], [X=Number of success], [$f(x) = binom(n,x) p^x q^(n-x)$], [$n p$], [$n p q$],
+  [Negative Binomial Distribution, $"NB"(k,p)$], [X=Number of trial], [$f(x) = binom(x-1, k-1) p^k q^(x-k)$], [$k/p$], [$((1-p)k)/p^2$],
+  [Geometric Distribution, $"Geom"(p) = "NB"(1,p)$], [X=Number of trial till 1st success], [$f(x)=(1-p)^(x-1)p$], [$1/p$], [$(1-p)/p^2$],
+  [Poisson Distribution, $"Poisson"(lambda)$], [X=Number of event occured in fixed time, $lambda=$Expected number of occurence], [$f(x) = (e^(-lambda) lambda^x)/x!$], [$lambda$], [$lambda$],
+  [Poisson Process, $"Poisson"(alpha T)$], [X=Number of event occured in fixed time], [$f(x) = (e^(-(alpha T)) (alpha T)^x)/x!$], [$alpha T$], [$alpha T$]
+  )
+
+  #inline[Approximate Binomial using Poisson Distribution]
+  As $n->infinity$ and $p -> 0$ but $lambda = n p$ remains constant, We may approximate $X ~ "Bin"(n,p)$ with $X~"Poisson"(n,p)$
+  $
+    lim_(p->0; n->infinity) P(X=x) = (e^(-n p) (n p)^x)/(x!)
+  $
+
+  Condition to use:
+  $
+    n>= 20 and p <= 0.05 "or" n>=100 and n p <= 10
+  $
+]
+
+== Continuous Probability Distribution
+#concept-block[
+ #inline[Continuous Uniform Distribution, $X~U(a,b)$]
+  $
+    f_X (x) = cases(1/(b-a) a<=x<=b, 0 "otherwise"),
+    quad E(x) = (a+b)/2,
+    quad V(X) = (b-a)^2/12
+  $
+
+  $
+    F_X (x) = cases(0 " "x<a, (x-a)/(b-a) " " a<= x <= b, 1 " "x>b)
+  $
+
+
+ #inline[Exponential Distribution, $X ~ "Exp"(lambda)$]
+Model the waiting time until the next event when events occur independently at a constant average rate.
+For $lambda > 0$, $lambda$ is the average event rate, Mean waiting time is $E(X) = 1/lambda$.
+$
+  f_X(x) = cases(
+    lambda e^(-lambda x) & "if " x >= 0,
+    0                     & "if " x < 0,
+  ),
+  quad E(X) = 1/lambda,
+  quad V(X) = 1/lambda^2
+$
+
+$
+  F_X(x) = P(X <= x)
+  = cases(
+    1 - e^(-lambda x) & "if " x >= 0,
+    0                  & "if " x < 0,
+  )
+$
+
+Hence, for $x >= 0$,
+$
+  P(X > x) = e^(-lambda x)
+$
+
+Let $mu = 1/lambda$. Then
+$
+  f_X(x) = cases(
+    1/mu e^(-x/mu) & "if " x >= 0,
+    0               & "if " x < 0,
+  )
+$
+
+$
+  E(X) = mu,
+  quad V(X) = mu^2,
+  quad F_X(x) = 1 - e^(-x/mu)
+$
+
+ #inline[Normal Distribution, $X~N(mu, sigma^2)$]
+ $
+   f_X (x) = 1/(sqrt(2 pi ) sigma) e^(-(x-mu)^2/(2sigma^2)), -infinity < x < infinity, E(X) = mu, V(X) = sigma^2 \
+   Z = (X-mu)/(sigma) \
+   phi(z) = f_Z (z) =1/sqrt(2pi) exp(-z^2/2) \ 
+   P(x_1 < X < x_2) = phi((x_2-mu)/sigma) - phi((x_1-mu)/sigma) \
+   P(Z<z) = P(Z>=-z) = 1-phi(-z)
+ $
+ Quartile $alpha$
+ $
+   P(Z >= z_alpha) = alpha
+ $
+
+ #inline[Approximate Binomial using Normal Distribution]
+ As $n -> infinity$ and $p$ is constant, we may approximate binomial distribution using normal distribution.
+
+ $
+   Z = (X - E(X))/(sqrt(V(X))) = (X - n p )/ (sqrt(n p (1-p)))
+ $
+
+ Use when $n p > 5$ and $n (1 - p) > 5$
+
+ Continuity Correction
+  $
+P(X = k) approx P(k - 1/2 < X < k + 1/2)
+$
+
+$
+P(a <= X <= b) &approx P(a - 1/2 < X < b + 1/2) \
+P(a < X <= b)  &approx P(a + 1/2 < X < b + 1/2) \
+P(a <= X < b)  &approx P(a - 1/2 < X < b - 1/2) \
+P(a < X < b)   &approx P(a + 1/2 < X < b - 1/2)
+$
+
+$
+P(X <= c) = P(0 <= X <= c)
+approx P(-1/2 < X < c + 1/2)
+$
+
+$
+P(X > c) = P(c < X <= n)
+approx P(c + 1/2 < X < n + 1/2)
+$ 
+
 ]
