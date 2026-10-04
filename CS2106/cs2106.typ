@@ -266,9 +266,9 @@
 
   #inline[Process Queues]
 
-  #align(center)[
-  #image("images/w2/process-queues.png", width: 65%)
-  ]
+  // #align(center)[
+  // #image("images/w2/process-queues.png", width: 65%)
+  // ]
 
   - The OS maintains a queue of processes for each state
     - *Ready Queue*: processes that are ready to be scheduled to run on the CPU
@@ -413,10 +413,10 @@ A process can only be created by forking an existing process, so Unix processes 
   - If the parent dies while the child is *already a zombie*, `init` reaps that leftover state too
 
 #inline[Parent–Child Lifecycle]
-1. Parent forks a child
-2. Child optionally execs a new program
-3. Child exits and becomes a zombie
-4. Parent waits
+1. Parent `fork` a child
+2. Child optionally `exec` a new program
+3. Child `exit` and becomes a zombie
+4. Parent `wait`
 5. Kernel removes the child's remaining process-table entry
 
 #inline[Unix Process States]
@@ -427,318 +427,300 @@ A process can only be created by forking an existing process, so Unix processes 
 
 = Process Scheduling
 #concept-block[
-*Concurrent processes* refers to processes that progress in execution at the same time. This can be achieved by:
-- Virtual Parallelism: Pseudo-parallelism
-- Physical Parallelism: Multiple CPU / Core to allow parallel execution
+*Concurrent processes* execute during the same period:
+- *Virtual parallelism:* pseudo-parallelism.
+- *Physical parallelism:* multiple CPUs/cores execute processes in parallel.
 
-#inline[Timeslicing]
-Interleaving of instruction between processes is called *timeslicing*
-- Context switching operation is required before one process can handover to another process.
-- Can be done in 1-Core CPU (timesliced for instructions) or multiprocessor (timesliced for instructions & CPU core)
-#image("images/w4/time-slicing.png", width: 80%)
-]
-== Scheduling Algorithms
-#concept-block[
-#inline[Scheduling Problem]
-When there are more ready-to-run processes than available CPUs, *Scheduler* decides process should be choosen to run based on *Scheduling Algorithm*
+*Time slicing* interleaves processes' instructions and requires a *context switch* at each handover. It works on *single core* (slice instructions) or *multiple processors* (slice instructions and cores).
 
-Scheduling Algorithm is tailored based on process behaviour and process environment.
-- *Process Behavior:* a typical process cycles between
-  1. CPU-activity: Compute-bound spends majority of time
-  2. IO-activity: IO-bound spends majority of time
-- *Processing Environment:*
-  1. Batch Processing: No interaction required, no need to be responsive.
-  2. Interactive (or Multiprogramming): Active user interacts with system. Should be responsive.
-  3. Real time processing: Have deadline to meet, usually periodic process.
+#inline[Scheduling]
+// #inline[Scheduling Problem]
+The *scheduler* uses a *scheduling algorithm* to choose the next process:
 
-For all processing environments:
-- *Fairness*: Processes should get a fair share of CPU time and no starvation
-- *Utilization*: All parts of computing system should utilized
+// Scheduling Algorithm is tailored based on process behaviour and process environment.
+// - *Process Behavior:* a typical process cycles between
+//   1. CPU-activity: Compute-bound spends majority of time
+//   2. IO-activity: IO-bound spends majority of time
+// - *Processing Environment:*
+//   1. Batch Processing: No interaction required, no need to be responsive.
+//   2. Interactive (or Multiprogramming): Active user interacts with system. Should be responsive.
+//   3. Real time processing: Have deadline to meet, usually periodic process.
 
-Scheduling Algorithms:
-- *Non-preemptive (Cooperative)*: Process stayed scheduled (in running state) until it blocks or give up the CPU voluntarily.
-- *Preemptive*: Process is given a fixed time quota to run, and at the end of the time quota, the process is suspended.
+// For all processing environments:
+// - *Fairness*: Processes should get a fair share of CPU time and no starvation
+// - *Utilization*: All parts of computing system should utilized
+
+// Scheduling Algorithms:
+- *Non-preemptive (cooperative):* runs until it blocks or voluntarily yields the CPU.
+- *Preemptive:* runs for a fixed quota, then is suspended.
 ]
 
-=== Scheduling for Batch Processing
+== Scheduling for Batch Processing
 #concept-block[
-Batched processing system has no user interaction and mostly dominated by non-preemptive scheduling.
+Batch systems have *no user interaction* and mainly use *non-preemptive scheduling*.
 
-*Key criterion*:
-- Turnaround time: Total time taken (finish time - arrival time)
-- Throughput: number of tasks finished per unit time
-- CPU Utilization: Percentage of time when CPU is working on a task
+*Criteria:*
+- *turnaround time* = finish - arrival
+- *throughput* = tasks finished per unit time
+- *waiting time* = total time waiting since creation
+- *CPU utilization* = percentage of time the CPU runs a task.
 
 #inline[First Come First Serve (FCFS)]
-*Mechanisms*:
-- Tasks are stored on First-In-First-Out (FIFO) queue.
-- First task in the queue to run until task is done or task is blocked.
-- Blocked task is removed from the FIFO queue, and placed at the back of queue when it is ready.
-
-*Characteristics*:
-- Non-preemptive algorithms
-- No Starvation
-
-*Shortcomings*:
-- Convoy Effect: CPU-bound and IO-bound processes cannot be run concurrently.
-- Reordering of task can reduce average waiting time.
-#image("images/w4/fcfs.png")
+Uses a *FIFO queue*. Its head runs until *completion or blocking*; a blocked task leaves the queue and rejoins its *tail* when ready.
+- *Traits:* *non-preemptive, no starvation.*
+- *Costs:* the *convoy effect* prevents CPU- and I/O-bound processes from running concurrently; *reordering* tasks can lower average waiting time.
+// #image("images/w4/fcfs.png", width: 60%)
 
 #inline[Shortest Job First (SJF)]
+Non-preemptively selects the task with the *smallest total CPU time*.
+- Requires *advance knowledge* of each task's total CPU time.
+- *Minimizes average waiting time*, but its bias toward short jobs can *starve long jobs*.
+// #image("images/w4/sjf.png")
 
-*Mechanism*:
-- Select the task with the smallest total CPU time
-
-*Characteristics*:
-- Non-preemptive algorithm
-- Need to know total CPU time for a task in advance
-- Starvation is possible as algorithm is biased towards short jobs
-- Guarantees smallest average waiting time as task with shortest job always comes first
-#image("images/w4/sjf.png")
-
-*Predicting CPU Time*
-- Guess the future CPU time requirement by previous CPU-Bound phases
+#inline[Predicting CPU Time]
+Estimate the next CPU-bound phase from previous phases:
 $
   "Predicted"_(n+1) = alpha "Actual"_n + (1-alpha) "Predicted"_n
 $
-
-- $"Actual"_n$: Most recent CPU time consumed
-- $"Predicted"_n$: Past history of CPU time consumed
-- $alpha$: Weight placed on recent event
-- $"Predicted"_(n+1)$: Latest prediction
+$"Actual"_n$: most recent CPU time; $"Predicted"_n$: past estimate; $alpha$: weight on the recent event; $"Predicted"_(n+1)$: new estimate.
 
 #inline[Shortest Remaining Time (SRT)]
-*Mechanism*:
-- Select job with shortest remaining (or expected) time
+Preemptively runs the job with the *shortest remaining (or expected) time*; a newly arrived shorter job *preempts* the running job.
 
-*Characteristics*:
-- Preemptive algoritm
-- When a new shorter job arrives, will stop current job and switch to shorter job
-
-#image("images/w4/srt.png")
+// #image("images/w4/srt.png")
 ]
-=== Scheduling for Interactive Environment
+== Scheduling for Interactive Environment
 #concept-block[
-Interactive Environment uses mostly preemptive algorithm for good response time with scheduler that runs periodically.
+Interactive systems mainly use a *periodically invoked, preemptive scheduler* for good *response time* and *predictability*.
 
-*Key Criterion*:
-- Response time
-- Predictability
+*Response Time*: First CPU time - time task creation 
 
 #inline[Timer & Time Quantum]
-- *Interval of Timer Interrupt (ITI)*: time it takes to interrupt and invoking the OS scheduler, typically 1ms-10ms.
-- *Time Quantum*: Execution duration given to a process, that must be multiples of timer interrupt. Time Quantum could be constant or variable among the processes, typically 5ms-100ms.
+- *Timer interrupt interval (ITI):* interval between interrupts that invoke the OS scheduler; typically *1–10 ms*.
+- *Time quantum:* process execution allowance; a *multiple of the ITI*, constant or process-dependent, typically *5–100 ms*.
 
-#image("images/w4/iti-time-quantum.png")
+// #image("images/w4/iti-time-quantum.png")
 
 #inline[Round Robin (RR)]
-*Mechanism*:
-- Tasks are stored on First-In-First-Out (FIFO) queue.
-- First task in the queue to run until a fixed time quantim elapsed, or task is done, or task is blocked.
-- Task is then placed at end of queue for another turn
-- Blocked task is removed from the FIFO queue, and placed at the back of queue when it is ready.
+*Preemptive FCFS* using a *FIFO queue*. Its head runs until its *quantum expires, it finishes, or it blocks*; an unfinished task rejoins the tail, as does a blocked task once ready.
+- *Timer interrupts* detect quantum expiry.
+- *Wait bound:* $(n-1)q$ before getting the CPU, for $n$ tasks and quantum $q$.
+- *Large $q$:* higher CPU utilization, longer waits. *Small $q$:* more overhead, shorter waits.
 
-*Characteristics*:
-- Preemptive algorithm (of FCFS)
-- Response time guarantee: Time taken before a task get CPU is bounded by $(n-1)q$ where $n$ is number of tasks and $q$ is quantum
-- Timer interrupt needed for scheduler to check on quantum expiry
-- Choice of time quantum duration matters:
-  - Big quantum is higher CPU utilization but longer waiting time
-  - Small quantum is bigger overhead but shorter waiting time
-
-#image("images/w4/round-robin.png")
+// #image("images/w4/round-robin.png")
 
 #inline[Priority Based]
-*Mechanism*:
-- Prioritise task with higher priority value.
-
-*Variants*:
-- Preemptive version
-  - Higher priority process can preempt (override) running process with lower priority
-- Non-preemptive version
-  - Late coming high priority process has to wait for next round of scheduling
-
-*Shortcomings*:
-- Low priority process may starve
-- Possible solution:
-  - Decrease the priority of currently running process after every time quantum
-  - Give the current running process a time quantum and ensure its not considered in next round of scheduling
-#image("images/w4/priority-scheduling.png")
+Runs the task with the *highest priority value*.
+- *Preemptive:* a higher-priority arrival preempts a lower-priority running process.
+- *Non-preemptive:* a late higher-priority arrival waits for the next scheduling round.
+- *Starvation:* low-priority processes may never run. Mitigate by *lowering the running process's priority* after each quantum, or *excluding it from the next round* after giving it a quantum.
+// #image("images/w4/priority-scheduling.png")
 
 #inline[Multi-Level Feedback Queue (MLFQ)]
-*Mechanism*:
-- If Priority(A) > Priority(B): run A.
-- If Priority(A) == Priority(B): A and B runs in RR
+*Higher priority wins; equal priorities use RR.* New job -> highest priority, Deplete time quantum -> priority decrease, Job gives up -> priority maintained. This minimizes *response time for I/O-bound* processes and *turnaround time for CPU-bound* processes.
 
-*Characteristics*:
-- Minimizes both response time for IO bound and turnaround time for CPU bound processes.
-
-#image("images/w4/mlfq.png")
+// #image("images/w4/mlfq.png")
 
 #inline[Lottery Scheduling]
-*Mechanism*:
-- Give out "Lottery Tickets" to different system resources (CPU Time, I/O devices)
-- When a scheduling decision is needed:
-  - A lottery ticket is randomly chosen among eligible Tickets to grant the resources
-  - In long run, a process holding X% of tickets can win X% of lottery held and use the resource X% of the time
+Distribute *lottery tickets* for resources (CPU time, I/O devices). At each decision, *randomly choose* an eligible ticket; in the long run, *X% of tickets gives X% resource use*.
 ]
 
 = Inter-Process Communication
 #concept-block[
-  *Inter-Process Communication* mechanisms is needed for transfering of information between processes.
-]
+  *Inter-Process Communication* transfers information between processes.
 
-== Shared-Memory
-#concept-block[
- A shared memory region $M$ is created, which will be attached by the processes $P_1$ and $P_2$, enabling communication.
+#inline[Shared-Memory]
+ A *shared memory* region $M$ is created(`shmget`) and attached(`shmat`) by the processes $P_1$ and $P_2$, enabling communication.
 
-  *Advantages*:
+  // *Advantages*:
   - Efficient: OS only needs to Create and Attach memory region
-  - Ease of use: information of any type or size can be written easily in shared memory space
+  - `shm[0]` to declare if the value is ready
+  - `shmget` to create, `shmat` to attach, `shmdt` to detach and `shmctl` to destroy
+  // - Ease of use: information of any type or size can be written easily in shared memory space
 
-  *Disadvantage*:
-  - Synchronization between resources is harder
-  - Implementation is usually harder
- 
- #image("images/w5/shared-memory.png", width: 80%)
+  // *Disadvantage*:
+  // - Synchronization between resources is harder
+// ```c
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <sys/shm.h>
 
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/shm.h>
+// int main() {
+//   int shmid, *shm;
 
-int main() {
-  int shmid, *shm;
+//   // Use shmget syscall to create a shared memory in
+//   // IPC_PRIVATE: Create a new, private segment that only related processes (e.g. parent/child after fork) can share by passing around this shmid.
+//   // Create the segment if it doesn’t exist, with Unix permissions 0600 — owner can read and write, nobody else can.
+//   shmid = shmget(IPC_PRIVATE, 3 * sizeof(int), IPC_CREAT | 0600 );
+//   // Exit if Memory cannot be created
+//   if (shmid == -1) exit(1);
 
-  // Use shmget syscall to create a shared memory in
-  // IPC_PRIVATE: Create a new, private segment that only related processes (e.g. parent/child after fork) can share by passing around this shmid.
-  // Create the segment if it doesn’t exist, with Unix permissions 0600 — owner can read and write, nobody else can.
-  shmid = shmget(IPC_PRIVATE, 3 * sizeof(int), IPC_CREAT | 0600 );
-  // Exit if Memory cannot be created
-  if (shmid == -1) exit(1);
+//   // Attach memory by initializing the pointer
+//   // NULL: Let kernel choose free virtual address
+//   // 0: no extra flag, default read/write access
+//   shm = (int*) shmat(shmid, NULL, 0);
+//   // Exit if memory cannot be attached
+//   if (shm == (int*) -1) exit(1);
 
-  // Attach memory by initializing the pointer
-  // NULL: Let kernel choose free virtual address
-  // 0: no extra flag, default read/write access
-  shm = (int*) shmat(shmid, NULL, 0);
-  // Exit if memory cannot be attached
-  if (shm == (int*) -1) exit(1);
+//   // Declare value not ready;
+//   shm[0] = 0;
+//   // Sleep while the value is ready
+//   while(shm[0] == 0) {
+//     sleep(3);
+//   }
 
-  // Declare value not ready;
-  shm[0] = 0;
-  // Sleep while the value is ready
-  while(shm[0] == 0) {
-    sleep(3);
-  }
+//   for (int i=0; i<3; i++) {
+//     printf("Read %d from shared memory. \n", shm[i+1]);
+//   }
 
-  for (int i=0; i<3; i++) {
-    printf("Read %d from shared memory. \n", shm[i+1]);
-  }
+//   // Detach and destroy shard memory region
+//   shmdt( (char*) shm);
+//   shmctl(shmid, IPC_RMID, 0);
 
-  // Detach and destroy shard memory region
-  shmdt( (char*) shm);
-  shmctl(shmid, IPC_RMID, 0);
+//   return 0;
+// }
 
-  return 0;
-}
+// ```
 
-```
+  #inline[Message Passing]
+  Process $P_1$ prepare messages $M$(stored in *kernel memory space*) and send to $P_2$ using *system calls*. Requires extra properties like Name and Synchronization.
+
+  // *Advantages*:
+  // - Portable: can be implemented on diff processing environment
+  // - Easier Synchronization: when sync primitives is used, sender and receiver are implicitly synchronized
+
+  // *Disadvantage*:
+  // - Inefficient: Requires OS intervention
+  // - Extra Copying
+
+//  #image("images/w5/message-passing.png", width: 80%)
+  - *Direct Communication*: Sender and Receiver of message explicitly name the other party (ie. unix domain socket). One-to-one communication between processes.
+  - *Indirect Communication*: Messages are sent / received from message storage known as mailbox or port (i.e. unix message queue). Many-to-Many communication between processes.
+  - *Blocking Primitives (synchronous)*: Receiver is blocked until message has arrived.
+  - *Non-Blocking Primitives (asynchronous)*: Receiver either receive the message if available or some indication that message is not ready.
 ]
 
-== Message Passing
+== Unix Pipes and Signals
 #concept-block[
-  Process $P_1$ prepare messages $M$ and send to $P_2$ using system calls, where $M$ is stored in kernel memory space. Requires extra properties like Name and Synchronization.
+  A process has 3 default communication channels: stdin (`scanf`), stdout (`printf`), stderr. Declared in bash with "|".
 
-  *Advantages*:
-  - Portable: can be implemented on diff processing environment
-  - Easier Synchronization: when sync primitives is used, sender and receiver are implicitly synchronized
-
-  *Disadvantage*:
-  - Inefficient: Requires OS intervention
-  - Extra Copying
-
- #image("images/w5/message-passing.png", width: 80%)
-
-  #inline[Direct Communication]
-  Sender and Receiver of message explicitly name the other party (ie. unix domain socket). One-to-one communication between processes.
-
-  #inline[Indirect Communication]
-  Messages are sent / received from message storage known as mailbox or port (i.e. unix message queue). Many-to-Many communication between processes.
-
-
-  #inline[Blocking Primitives (synchronous)]
-  Receiver is blocked until message has arrived.
-
-  #inline[Non-Blocking Primitives (asynchronous)]
-  Receiver either receive the message if available or some indication that message is not ready.
-]
-
-=== Unix Pipes
-#concept-block[
-  In Unix, a process has 3 default communication channels: stdin (`scanf`), stdout (`printf`), stderr. Declared using "|".
-
-  Pipe functions as:
-    - Circular bounded byte buffer: Writers wait when buffer is full
-    - Implicit Synchronization: Readers wait when buffer is empty
+  `int pipe(int fd[])` functions as *circular bounded byte buffer* (writers wait when buffer is full) and *implicit synchronization* (readers wait when buffer is empty)
+  - Returns -1 if creation of fd fails
 
   Depending on Unix version, pipes may be:
     - Half-duplex: unidirectional with one write end and one read end
     - Full-duplex: bidirectional with any end for read and write
 
-```c
-#define READ_END 0
-#define WRITE_END 1
+  - `pipe(fd[2])` creates an array of file descriptor with `READ_END=0`, `WRITE_END=1`.
+  - process may `write(fd[WRITE_END], str, strlen(str)+1)` or `read(df[READ_END], buf, sizeof(buf))` from pipe
+  - `dup2(fd[0], STDID_FILENO)` and `dup2(fd[1], STDOUT_FILENO)`
 
-int main()
-{
-  int pipeFd[2], pid, len;
-  char buf[100], *str = "Hello There!";
+// ```c
+// #define READ_END 0
+// #define WRITE_END 1
 
-  pipe( pipeFd );
+// int main()
+// {
+//   int pipeFd[2], pid, len;
+//   char buf[100], *str = "Hello There!";
 
-  if ((pid = fork()) > 0) { /* parent */
-    close(pipeFd[READ_END]);
-    write(pipeFd[WRITE_END], str, strlen(str)+1);
-    close(pipeFd[WRITE_END]);
-  } else { /* child */
-    close(pipeFd[WRITE_END]);
-    len = read(pipeFd[READ_END], buf, sizeof(buf));
-    printf("Proc %d read: %s\n", pid, buf);
-    close(pipeFd[READ_END]);
-  }
-}
-```
-]
+//   pipe( pipeFd );
 
-=== Unix Signal
-#concept-block[
-  Quick form of inter-process communication, sent to a process using an asynchronous notification regarding an event.
+//   if ((pid = fork()) > 0) { /* parent */
+//     close(pipeFd[READ_END]);
+//     write(pipeFd[WRITE_END], str, strlen(str)+1);
+//     close(pipeFd[WRITE_END]);
+//   } else { /* child */
+//     close(pipeFd[WRITE_END]);
+//     len = read(pipeFd[READ_END], buf, sizeof(buf));
+//     printf("Proc %d read: %s\n", pid, buf);
+//     close(pipeFd[READ_END]);
+//   }
+// }
+// ```
+
+#inline[Unix Signal]
+  `signal` sent to a process using an asynchronous notification regarding an event.
 
   - Eg. Kill, Interrupt, Stop, Continue, Memory Error, Arithmetic Error...
 
+//   ```c
+// #include <stdio.h>
+// #include <signal.h>
+// #include <unistd.h>
+
+// void myOwnHandler( int signo )
+// {
+//   if (signo == SIGSEGV){
+//     printf("Memory access blows up!\n");
+//     exit(1);
+//     }
+// }
+
+// int main()
+// {
+//   int *ip = NULL;
+
+//   if (signal(SIGSEGV, myOwnHandler) == SIG_ERR)
+//     printf("Failed to register handler\n");
+
+//   *ip = 123;
+
+//   return 0;
+// }
+// ```
+]
+== Threads
+#concept-block[
+  Multiple *threads* run concurrently in a process, sharing the *same memory context* (e.g. text, data, heap) and *OS context* (PID and other resources), *differing* only in *hardware context* (registers and stack).
+  
+  #inline[User and Kernel Thread]
+  - *User Thread* is thread implemented as user library and handles by its runtime process, not aware by kernel.
+    - Pros: More configurable and portable as thread operation are just library calls.
+    - Cons: Scheduling performed at process level (1 thread blocks out whole process); cannot exploit multiple CPU.
+  - *Kernel Thread* is thread implemented by OS, handled as system calls, enabling thread-level scheduling.
+    - Pros: More than 1 thread in same process can run on multiple CPUs as it is handled by Kernel
+    - Cons: Thread operation with system call (higher overhead), and generally less flexible.
+  - *Hybrid Thread* uses both user thread and kernel thread at the same time.
+]
+
+= Synchronization
+#concept-block[
+  Concurrent execution is *non-deterministic*, so a *race condition* occurs when the outcome depends on the order of shared-resource access/modification.
+
+  *Critical section (CS)* is code segment that only one process may execute at a time with the following properties
+  - *Mutual Exclusion*: Only one processes can executes CS.
+  - *Progress*: If no process in CS, one of the waiting processes is granted access.
+  - *Bounded Wait*: Upperbound time for $P_1$ in CS, before other process can enter.
+  - *Independence*: Process in non-CS should never block other process.
+
+  Outcome of incorrect CS implementation:
+  - *Deadlock*: All processes blocked and stops exeecution
+  - *Livelock*: Result of deadlock avoidance mechanism, where processes keep changing state and make no progress
+  - *Starvation*: Some proccesses are blocked forever
+
+  #inline[Low-Level Implementation: TestAndSet]
+
+  `TestAndSet Register, MemoryLocation` loads the content from memory to register, and stores 1 to memory, happens on hardware level (atomic).
+
   ```c
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
+  EnterCS(int* Lock) while (TestAndSet(Lock) == 1) // Loop -> unlock
+  ExitCS(int* Lock) *Lock=0; // Set lock to 0
+  ```
 
-void myOwnHandler( int signo )
-{
-  if (signo == SIGSEGV){
-    printf("Memory access blows up!\n");
-    exit(1);
-    }
-}
+  #inline[Higher level Language: Peterson's Algorithm]
+  #align(center)[
+    #image("images/w6/peterson.png", width: 60%)
+  ]
 
-int main()
-{
-  int *ip = NULL;
+  #inline[Higher level synchronization: Semaphore]
+  Sempahore is an integer $S >= 0$, represent number of jobs that can run concurrently (counting semaphore).
+  `mutex` when $S in {0,1}$ 
+    - `Wait(S)`: When S==0, blocks and puts process to sleeping queue. Else, S-- (`P()`, `Down()`)
+    - `Signal(S)`: Wakes up 1 sleeping processes if any. Else, S++ (`V()`, `Up()`)
 
-  if (signal(SIGSEGV, myOwnHandler) == SIG_ERR)
-    printf("Failed to register handler\n");
+  $
+   N_(C S) = \#"Signal"("S") - \#"Wait"("S") quad S_"current" = 1 + N_(C S),quad  N_(C S) <= S_"initial"
+  $
 
-  *ip = 123;
-
-  return 0;
-}
-```
 ]
