@@ -191,8 +191,8 @@
 
 == Memory & Function Calls
 #concept-block[
-  - Each function invocation *pushes a new stack frame onto the stack*, while each function return *pops the top stack frame*.
-  - *FP* points to the fixed base of the current stack frame, allowing access of arguments and locals with constant offset.
+  - Each function invocation *pushes* / return *pop* a new *stack frame onto the stack*.
+  - *FP* points to the fixed location in stack frame, allowing access with constant offset.
 
   #table(
     columns: (auto, auto, 1fr),
@@ -230,6 +230,7 @@
     ],
     [
   #image("images/w2/stack-frame.png")
+  + Return Value
     ]
   )
 
@@ -238,7 +239,8 @@
   - *Register Spilling*: When a function has more arguments than the number of registers, the extra arguments are spilled to the stack
     - *Callee-saved* (default 2106 convention): the callee saves the old values of the registers into its stack frame and restores them after the call
     - *Caller-saved*: the caller saves needed registers into its stack frame and restores them after the call
-
+  - *Stack Frame Deallocation*: doesnt guarantee removing of previous values
+  
   #inline[Heap Memory]
   - *heap* is a memory region to store dynamically allocated memory. (e.g. `malloc` and `free` in C)
   - Dynamically allocated data *cannot be stored in*:
@@ -253,6 +255,9 @@
   #image("images/w2/state-process-model.png", width: 70%)
   ]
 
+  - Voluntarily give up cpu: running $->$ ready
+  - Context switch: ready $->$ running
+
   // - A process can be in one of the following states:
   //   - *New*: process has been created but not fully initialised/admitted to the system
   //   - *Ready*: process is waiting to execute
@@ -261,7 +266,7 @@
   //   - *Terminated*: process has finished execution
   
   #inline[Multi-Process Management]
-  - With 1 CPU core, at most 1 process can be running at a time (2106 convention)
+  - With 1 CPU core, at most 1 process can be running at a time (without threading)
   - With $m$ CPU cores, at most $m$ processes can be running at a time
 
   #inline[Process Queues]
@@ -286,7 +291,7 @@ A *Process Control Block (PCB)* or *Process Table Entry* is a data structure tha
 
 == System Calls
 #concept-block[
-  *System Call* is an *OS API* for a *user program to request services* in Kernel.
+  *System Call* is a synchronous *OS API* for a *user program to request services* in Kernel.
 
   // #inline[Difference in OS]
   // - Unix Variant:
@@ -389,10 +394,7 @@ A process can only be created by forking an existing process, so Unix processes 
 - On process `exit()`:
   - Process state is set to *Zombie*
   - Most resources are released (e.g. file descriptors)
-  - Some information is *not releasable* (so the parent can `wait()`):
-    - PID
-    - Exit status
-    - Process accounting (e.g. CPU time)
+  - Some information is *not releasable*, so the parent can `wait()`, Eg: PID, Exit status, Process accounting (e.g. CPU time)
 
 #inline[`wait()`]
 *`pid_t wait(int *status)`* lets a parent synchronise with any child(s):
@@ -412,12 +414,12 @@ A process can only be created by forking an existing process, so Unix processes 
   - When the child later terminates, `init` will clean up with `wait()`
   - If the parent dies while the child is *already a zombie*, `init` reaps that leftover state too
 
-#inline[Parent–Child Lifecycle]
-1. Parent `fork` a child
-2. Child optionally `exec` a new program
-3. Child `exit` and becomes a zombie
-4. Parent `wait`
-5. Kernel removes the child's remaining process-table entry
+// #inline[Parent–Child Lifecycle]
+// 1. Parent `fork` a child
+// 2. Child optionally `exec` a new program
+// 3. Child `exit` and becomes a zombie
+// 4. Parent `wait`
+// 5. Kernel removes the child's remaining process-table entry
 
 #inline[Unix Process States]
 #align(center)[
@@ -514,10 +516,14 @@ Runs the task with the *highest priority value*.
 - *Preemptive:* a higher-priority arrival preempts a lower-priority running process.
 - *Non-preemptive:* a late higher-priority arrival waits for the next scheduling round.
 - *Starvation:* low-priority processes may never run. Mitigate by *lowering the running process's priority* after each quantum, or *excluding it from the next round* after giving it a quantum.
+- *Priority Inversion:* H priority task is blocked by L priority task, who will never get scheduled as M priority task is in the way.
 // #image("images/w4/priority-scheduling.png")
 
 #inline[Multi-Level Feedback Queue (MLFQ)]
 *Higher priority wins; equal priorities use RR.* New job -> highest priority, Deplete time quantum -> priority decrease, Job gives up -> priority maintained. This minimizes *response time for I/O-bound* processes and *turnaround time for CPU-bound* processes.
+
+- Constantly spawning child before time quantum exceeds
+- Bias for IO heavy task, CPU heavy task may starve
 
 // #image("images/w4/mlfq.png")
 
@@ -594,8 +600,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   // - Extra Copying
 
 //  #image("images/w5/message-passing.png", width: 80%)
-  - *Direct Communication*: Sender and Receiver of message explicitly name the other party (ie. unix domain socket). One-to-one communication between processes.
-  - *Indirect Communication*: Messages are sent / received from message storage known as mailbox or port (i.e. unix message queue). Many-to-Many communication between processes.
+  - *Direct Communication*: Sender and Receiver 1-1 message explicitly name the other party (ie. unix domain socket). `Send/Receive( P1, Msg )`
+  - *Indirect Communication*: Messages are sent / received from many-many message storage known as mailbox or port (i.e. unix message queue).  `Send/Receive( MB, Msg )`
   - *Blocking Primitives (synchronous)*: Receiver is blocked until message has arrived.
   - *Non-Blocking Primitives (asynchronous)*: Receiver either receive the message if available or some indication that message is not ready.
 ]
@@ -604,16 +610,19 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 #concept-block[
   A process has 3 default communication channels: stdin (`scanf`), stdout (`printf`), stderr. Declared in bash with "|".
 
-  `int pipe(int fd[])` functions as *circular bounded byte buffer* (writers wait when buffer is full) and *implicit synchronization* (readers wait when buffer is empty)
+  `int pipe(int fd[])` functions as circular bounded byte buffer (*writers wait when buffer is full*) and implicit synchronization (*readers wait when buffer is empty*)
   - Returns -1 if creation of fd fails
+  - Returns EOF if read from an empty pipe with no writer
 
-  Depending on Unix version, pipes may be:
-    - Half-duplex: unidirectional with one write end and one read end
-    - Full-duplex: bidirectional with any end for read and write
-
+  Steps for creating a pipe:
   - `pipe(fd[2])` creates an array of file descriptor with `READ_END=0`, `WRITE_END=1`.
-  - process may `write(fd[WRITE_END], str, strlen(str)+1)` or `read(df[READ_END], buf, sizeof(buf))` from pipe
+  - process may `write(fd[WRITE_END], str, strlen(str)+1)` or `read(df[READ_END], buf, sizeof(buf))`
   - `dup2(fd[0], STDID_FILENO)` and `dup2(fd[1], STDOUT_FILENO)`
+
+  Redirecting `printf` to `STDOUT`:
+  1. `close(STDOUT);`
+  2. `open("file.txt", O_WRONLY | OCREATE | OTRUNC, 0644);`
+
 
 // ```c
 // #define READ_END 0
@@ -640,9 +649,11 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 // ```
 
 #inline[Unix Signal]
-  `signal` sent to a process using an asynchronous notification regarding an event.
+  `signal` sent to a process using an *asynchronous* notification regarding an event.
 
   - Eg. Kill, Interrupt, Stop, Continue, Memory Error, Arithmetic Error...
+  - `kill -9` (ie SIGKILL) cannot be captured with user-define handler
+  - Signal handler cannot wait or signal a semaphore as it is not async safe
 
 //   ```c
 // #include <stdio.h>
@@ -686,7 +697,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
 = Synchronization
 #concept-block[
-  Concurrent execution is *non-deterministic*, so a *race condition* occurs when the outcome depends on the order of shared-resource access/modification.
+  Concurrent execution is *non-deterministic*, so a *race condition* occurs when the outcome depends on the *order of shared-resource access/modification*.
 
   *Critical section (CS)* is code segment that only one process may execute at a time with the following properties
   - *Mutual Exclusion*: Only one processes can executes CS.
@@ -710,7 +721,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
   #inline[Higher level Language: Peterson's Algorithm]
   #align(center)[
-    #image("images/w6/peterson.png", width: 60%)
+    #image("images/w6/peterson.png", width: 50%)
   ]
 
   #inline[Higher level synchronization: Semaphore]
