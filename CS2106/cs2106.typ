@@ -733,5 +733,140 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   $
    N_(C S) = \#"Signal"("S") - \#"Wait"("S") quad S_"current" = 1 + N_(C S),quad  N_(C S) <= S_"initial"
   $
+]
 
+= Memory Management
+#concept-block[
+  *Random Access Memory* is physical memory storage, consisting of array of bytes, with each byte identifiable by its physical address.
+
+  Source Code -> Executable (Code, Data layout) -> Load and Run on Main Memory
+
+  #inline[Transient and Presistent Data]
+  - *Transient Data*: Valid only for limited duration, e.g. function call.
+  - *Persistent Data*: Valid for the duration of program unless explicitly removed.
+]
+
+== Memory Abstraction
+#concept-block[
+  Without memory abstraction, each compiled program access the *physical memory space directly*.
+  - Conflict occurs when there are multiple processes running the same program at same time.
+
+  1. *Address Relocation* adds fixed offset to all memory reference in Process B *when process is loaded to memory*.
+  - Slow loading time and inability to distinguish memory reference form integer constant
+
+  2. *Base + Limit Registers* uses `base` and `limit` registers to offset and set limit for memory access and boundary on memory access.
+  - `Actual = Base + Adr && Actual < Limit`
+  - Every memory access incur additional `+` and `<` operation
+
+  3. *Logical Address* is memory space accessible by a process.
+    - Requires mapping between logical address and physical address
+    - Self-contained, independent logical memory space for each process
+]
+
+== Contiguous Memory Allocation
+#concept-block[
+  *Contiguous memory* is an interval of consecutive addresses.
+
+  *Memory Partition* is continuguous memory region allocated to a single process.
+
+  #inline[Fixed Partitioning]
+  *Fixed-Size Partition* splits physical memory into fixed number of partitions.
+    - Easy to manager / allocate
+    - Partition size need to be large enough to contain the largest processes, resulting in *internal fragmentation* (gap within partition)
+  
+  #inline[Dynamic Partitioning]
+  *Dynamic Partitioning* merges free memory space (hole) by moving occupied partitions to create larger hole.
+
+  Algorithms to locate partition of size $N$:
+  1. First-Fit: take the *first hole* that is large enough
+  2. Best-Fit: take the *smallest hole* that is large enough
+  3. Worst-Fit: take the *largest hole*
+
+  Compaction may be used to move occupied partition around to create consolidated holes.
+
+  #inline[Buddy System]
+  *Buddy memory allocation* splits hole into half repeatedly to meet the best-fit request, and join the buddies together when both are free.
+  - provides efficient partition splitting
+  - locating good match of hole
+  - partition de-allocation and coalescing.
+  - may result in *external framentation* (gap between partition)
+
+  Initialisation:
+  1. Maintain an array $A$ of size $K$ where each i-th element consists of linkedList of free blocks of size $2^i$
+  
+  Allocation:
+  1. Given a block request of size $N$, compute $S = ceil(log_2 N)$ which is the minimum size.
+  2. If `A[S]` is not empty, allocate the block by remove the first block from the linkedList.
+  3. Else:
+    1. Find smallest $R in [S+1, K]$ where `A[R]` is not empty
+    2. For $j in [R-1, S]$ (reverse order), repeatedly split B to create free block
+
+  Deallocation:
+  1. Append free block to `A[S]`
+  2. If the buddy block exists in `A[S]` (identified where all bits are the same except for bit ), merge them and go to Step 1
+]
+
+== Disjoint Memory Allocation
+#concept-block[
+  *Paging* is process of translating *logical memory* to *physical memory*, in disjointed physical memory locations.
+  
+  - *Logical Page*: partition of logical memory, identified using logical address of $m$-bits
+  - *Physical Frame*: partition of physical memory, identified using physical address
+  - *Frame size*: Size of physical frame and logical page, powers of 2.
+  - *Page Table*: Maps page number $p$ to frame number $f$. Size of $2^n$
+  
+  #table(
+    columns: 3,
+    [Logical Address], [*Page Number*, p = (m-n)], [Offset, d],
+    [Physical Address], [*Frame Number*, f], [Offset, d],
+  )
+
+  $
+    "Physical Address" = "PageTable"["LogicalPage"] times 2^"FrameSize" + "Offset"
+  $
+
+  - Removes external fragmentation, but may have internal fragmentation.
+  - Page table is stored in PCB, but requires two memory access for every memory reference
+
+  Protection for paging schemes:
+  - *Access Right Bits*: indicate if data is writable, readable and executable
+  - *Valid Bit*: Indicate the page is valid for process to access
+
+  Page Sharing: Page table allows proccesses to share the same physical memory frame to support:
+  - Shared code page: system code that are used by many processes
+  - Copy-on-write: to allow child processes to share a page until the values is mutated
+  
+  #inline[Translation Look-Aside Buffer (TLB)]
+  *Translation Look-Aside Buffer* (TLB) cache page table entries to support paging. 
+  
+  TLB is *hardware context* of process, i.e. TLB is flushed when context switch occurs.
+
+  TLB-Hit: Frame number is retrieved to generate physical address.
+  TLB-Miss: Memory access to access the full page table, update TLB after retrieving frame number.
+
+  #inline[Segmentation]
+  Memory of a process is splitted into different memory region (Text, Data, Heap, Stack).
+
+  The memory regions are split into multiple memory segments\<SegId, Offset\>.
+
+  Segment tables, identified by SegId, stores the Base + Limit of a segment.
+
+  $
+    "Physical Address" = "SegmentTable"["SegId"]."Base" + "Offset" < "Limit"
+  $
+]
+
+== Virtual Memory Management
+#concept-block[
+  *Virtual memory* refers to page table entries in secondary storage, while the rest are in physical memory (memory resident).
+
+  Page Fault / Trashing when CPU access non-memory resident page (before bringing page into physical memory).
+
+  Locality Principles:
+  - Temporal Locality: memory address used is likely to be used again.
+  - Spatial Locality: memory address close to a used address is likely to be used.
+
+  #inline[Page Table Structure]
+  #inline[Page Replacement Algorithms]
+  #inline[Frame Allocation]
 ]
