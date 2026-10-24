@@ -737,26 +737,23 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
 = Memory Management
 #concept-block[
-  *Random Access Memory* is physical memory storage, consisting of array of bytes, with each byte identifiable by its physical address.
+  *Random Access Memory* is physical memory storage, consisting of array of bytes, identifiable by its physical address.
 
-  Source Code -> Executable (Code, Data layout) -> Load and Run on Main Memory
-
-  #inline[Transient and Presistent Data]
   - *Transient Data*: Valid only for limited duration, e.g. function call.
   - *Persistent Data*: Valid for the duration of program unless explicitly removed.
 ]
 
 == Memory Abstraction
 #concept-block[
-  Without memory abstraction, each compiled program access the *physical memory space directly*.
-  - Conflict occurs when there are multiple processes running the same program at same time.
+  Without *memory abstraction*, programs access *physical memory directly*, so *multiple processes of the same program* may conflict.
 
-  1. *Address Relocation* adds fixed offset to all memory reference in Process B *when process is loaded to memory*.
-  - Slow loading time and inability to distinguish memory reference form integer constant
+  Following are few attempts for memory abstractions and their tradeoffs:
+  1. *Address Relocation*: Adds *fixed offset* to all memory reference *when process is loaded to memory*.
+    - Slow loading time and inability to distinguish memory reference from integer constant
 
   2. *Base + Limit Registers* uses `base` and `limit` registers to offset and set limit for memory access and boundary on memory access.
-  - `Actual = Base + Adr && Actual < Limit`
-  - Every memory access incur additional `+` and `<` operation
+    - `Actual = Base + Adr && Actual < Limit`
+    - Every memory access incur additional `+` and `<` operation
 
   3. *Logical Address* is memory space accessible by a process.
     - Requires mapping between logical address and physical address
@@ -765,17 +762,15 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
 == Contiguous Memory Allocation
 #concept-block[
-  *Contiguous memory* is an interval of consecutive addresses.
-
-  *Memory Partition* is continuguous memory region allocated to a single process.
+  *Memory Partition* is continuguous memory region (i.e. interval of consecutive addresses) allocated to a single process.
 
   #inline[Fixed Partitioning]
   *Fixed-Size Partition* splits physical memory into fixed number of partitions.
-    - Easy to manager / allocate
+    - Easy to manage / allocate
     - Partition size need to be large enough to contain the largest processes, resulting in *internal fragmentation* (gap within partition)
   
   #inline[Dynamic Partitioning]
-  *Dynamic Partitioning* merges free memory space (hole) by moving occupied partitions to create larger hole.
+  *Dynamic Partitioning* allocate memory space to free memory space (aka hole) based on allocation algorithm.
 
   Algorithms to locate partition of size $N$:
   1. First-Fit: take the *first hole* that is large enough
@@ -785,7 +780,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   Compaction may be used to move occupied partition around to create consolidated holes.
 
   #inline[Buddy System]
-  *Buddy memory allocation* splits hole into half repeatedly to meet the best-fit request, and join the buddies together when both are free.
+  *Buddy memory allocation* splits hole into half repeatedly to meet the best-fit request, and merge the buddies together when both are free.
   - provides efficient partition splitting
   - locating good match of hole
   - partition de-allocation and coalescing.
@@ -808,65 +803,127 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
 == Disjoint Memory Allocation
 #concept-block[
-  *Paging* is process of translating *logical memory* to *physical memory*, in disjointed physical memory locations.
+  *Paging* is process of mapping *logical pages* $in$ *logical memory* to *physical frames* $in$ *physical memory*, in disjointed physical memory locations.
   
-  - *Logical Page*: partition of logical memory, identified using logical address of $m$-bits
-  - *Physical Frame*: partition of physical memory, identified using physical address
-  - *Frame size*: Size of physical frame and logical page, powers of 2.
-  - *Page Table*: Maps page number $p$ to frame number $f$. Size of $2^n$
-  
-  #table(
-    columns: 3,
-    [Logical Address], [*Page Number*, p = (m-n)], [Offset, d],
-    [Physical Address], [*Frame Number*, f], [Offset, d],
-  )
-
   $
-    "Physical Address" = "PageTable"["LogicalPage"] times 2^"FrameSize" + "Offset"
+    "Physical Frame" = "PageTable"["LogicalPage"] times 2^"n" "(Frame Size)" + "Offset"
   $
 
-  - Removes external fragmentation, but may have internal fragmentation.
-  - Page table is stored in PCB, but requires two memory access for every memory reference
+    - Page Table: Maps page number $p=m-n$ to frame number $f$. Size of $2^(m-n)$
+    - Frame size: Size of physical frame and logical page, Size of $2^n$.
 
-  Protection for paging schemes:
-  - *Access Right Bits*: indicate if data is writable, readable and executable
-  - *Valid Bit*: Indicate the page is valid for process to access
+  #align(center)[
+    #image("images/w8/logical-physical-address.png", width: 40%)
+  ]
 
-  Page Sharing: Page table allows proccesses to share the same physical memory frame to support:
-  - Shared code page: system code that are used by many processes
-  - Copy-on-write: to allow child processes to share a page until the values is mutated
+  Key characteristics:
+  - Page table is *stored in PCB*, but requires *two memory access* for every memory reference (one for page table entry, another for actual memory item).
+    - Access Right Bits: indicate if data is writable, readable and executable
+    - Valid Bit: Indicate the page is valid for process to access
+  - *Removes external fragmentation*, but may *have internal fragmentation*.
+
   
   #inline[Translation Look-Aside Buffer (TLB)]
-  *Translation Look-Aside Buffer* (TLB) cache page table entries to support paging. 
-  
-  TLB is *hardware context* of process, i.e. TLB is flushed when context switch occurs.
+  *Translation Look-Aside Buffer* (TLB) is *hardware context* of process (flushed when context switch occurs) that *caches a few page table entries*. 
 
-  TLB-Hit: Frame number is retrieved to generate physical address.
-  TLB-Miss: Memory access to access the full page table, update TLB after retrieving frame number.
+  - `TLB-Hit`: Frame number is retrieved to generate physical address.
+  - `TLB-Miss`: Memory access to access the full page table, update TLB after retrieving frame number.
+
+  #inline[Page Sharing]
+  Page Sharing allows proccesses to share the same physical memory frame in page table, enabling:
+
+  - Shared code page: system code that are used by many processes
+  - Copy-on-write: to allow child processes to share a page until the values is mutated
+
 
   #inline[Segmentation]
-  Memory of a process is splitted into different memory region (Text, Data, Heap, Stack).
+  *Segmentation* seperates memory of a process into different memory segments (e.g. _text, data, heap, stack_) $in$ logical memory space, with each segments identifiable with a segment name and limit.
 
-  The memory regions are split into multiple memory segments\<SegId, Offset\>.
-
-  Segment tables, identified by SegId, stores the Base + Limit of a segment.
-
+  Segment table, identifiable by sgement id, stores the base address and limit of a segment.
+  
   $
-    "Physical Address" = "SegmentTable"["SegId"]."Base" + "Offset" < "Limit"
+    "Physical Address" = ("SegmentTable"["SegId"]."Base" + "Offset") && "Offset" < "Limit"
   $
+
+  #inline[Segmentation with Paging]
+
+  Store each memory segment in disjointed logical memory pages
+
+  #align(center)[#image("images/w8/segmentation-with-paging.png", width: 60%)]
 ]
 
 == Virtual Memory Management
 #concept-block[
-  *Virtual memory* refers to page table entries in secondary storage, while the rest are in physical memory (memory resident).
+  *Virtual memory* saves to page table entries in secondary storage (e.g harddisk), while the rest are in physical memory.
 
-  Page Fault / Trashing when CPU access non-memory resident page (before bringing page into physical memory).
+  *Memory resident* refers to page table entry that exists in physical memory, while *non-memory resident* are in secondary storage, `isMemoryResident` stores in page table.
+
+  *Page Fault* when CPU access non-memory resident page (before bringing page into physical memory, aka *Trashing*).
 
   Locality Principles:
   - Temporal Locality: memory address used is likely to be used again.
   - Spatial Locality: memory address close to a used address is likely to be used.
 
   #inline[Page Table Structure]
+  *Direct Paging* keeps all page table entries in a single table, with size of $2^p$
+  - However, this resulted in the whole page table being stored in physical memory, when we dont need that many page table entries active at one time.
+
+  *2-Level Paging* extends direct paging, by using first $m$ bit for outer page table/page directory, and $p-m$ bit for inner/smaller page table.
+  - Empty entries in page directory is possible
+  - Only page directory needs to be in memory
+
+  #align(center)[#image("images/w9/2-level-paging.png", width: 60%)]
+
+  *Inverted Page Table* uses process id and page number, to uniquely identify a frame number.
+
+  Since page number is process specific, each process loading its own page table is waste of space.
+  
+  With process id, we can perform some hashing to obtain the physical frame number.
+
+  #align(center)[#image("images/w9/inverted-table.png", width: 60%)]
+
   #inline[Page Replacement Algorithms]
+  *Page replacement* happens when page fault occurs and physical memory frame is full.
+  $
+    T_"access" = (1-p) * T_"mem" + p * T_"page_fault"
+  $
+  - $p$: probability of page fault
+  - $T_"mem"$: access time for memory resident page
+  - $T_"page_fault"$: access time when page fault
+  - $T_"access"$: total memory access time
+
+  *Optimal Page Replacement (OPT)* replaces page that will not be used again for longest period of time.
+  - guarantees minimum page fault, but rely on future knowledge
+
+  *FIFO* uses a queue and replace oldest memory page.
+  - does not exploit temporal locality
+  - Belady's Anomaly: higher number of frames resulting in more page faults
+
+  *Least Recently Used (LRU)* replace page that has not been used in longest time
+  - exploit temporal locality
+  - does not suffer from Belady's Anomaly
+  - hard to implement using pure counter and stack
+
+  *Second-Chance Page Replacement (CLOCK)* modified a FIFO queue to give second chance to page that are accessed.
+
+  When a page is accessed, reference bit flips to 1.
+  Oldest page has reference bit of 0 => evicted; reference bit of 1 => reference bit to 0
+
   #inline[Frame Allocation]
+
+  Given the full physical memory, how much frame should we allocate for each process affects the trashing.
+
+  *Local Replacement*: Fixed frame given for process, local trashing occur.
+  - Pro: Stable performance between runs
+  - Cons: Slow progress if frame is not allocated enough
+
+  *Global Replacement*: Self-adjustment of frame between processes
+  - Pro: Process that needs more frame can get from other
+  - Cons: Badly behave process can affect others and inconsistent frame allocation from run to run
+
+  *Working Set Model* $W (t, Delta)$ uses a window $Delta$, representing the amount of frame allocated to a process at given time interval $t$
+
+  E.g. when transiental period, increase $Delta$, when persistal period, lower $Delta$
 ]
+
+
