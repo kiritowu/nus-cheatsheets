@@ -926,4 +926,108 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   E.g. when transiental period, increase $Delta$, when persistal period, lower $Delta$
 ]
 
+= File System
+#concept-block[
+  *File system* consist of collection of files and directory structures.
+  - provide abstraction for physical media
+  - high level resource management scheme, enabling
+  - Protection between processes and users
+  - Sharing between processes and users
+  #align(center)[#image("images/w11/harddisk.png", width: 50%)]
+  #align(center)[#image("images/w11/file-management.png", width: 70%)]
+]
 
+== File
+#concept-block[
+  *File* consist of Data and Metadata/File Attributes.
+  #inline("File Metadata")
+  #align(center)[#image("images/w11/file-metadata.png", width: 70%)]
+
+  1. *File Name*
+  - Naming rule for different FS, including file name length, case sensitivity, special symbol, file extension postfix
+
+  2. *File Type*
+  - File type has associated sets of file operations.
+  - Distinguishable using file extension in Windows and Magic Number in Unix.
+  - Common file types:
+    - Regular Files: User data (ASCII files, Binary files)
+    - Directories: System files for FS structure
+    - Special Files: character/block oriented
+
+  3. *File Protection*
+  - Control access to information stored in a file.
+  - Type of Access: Read, Write, Execute, Append, Delete, List
+  - Permission Bits: Owner(rwx), Group(r- -), Universe (r- -)
+  - Access Control List:
+  ```bash
+  getfacl exampleDir
+  # file: exampleDir
+  # owner: sooyj
+  # group: compsc
+  user::rwx
+  user:aaron:rwx
+  group::r-x
+  group:cohort17:rwx
+  mask::rwx
+  other::---
+  ```
+
+  #inline[File Data]
+  Each file is array of bytes, with offset from the start of file.
+
+  File Access Methods:
+  1. Sequential Access: read data in order, starting from beginning
+  2. Random Access:
+    1. Read (Offset): Read operation from position stated
+    2. Seek (Offset): Move to a new location in file
+  3. Direct Access: Allow random access to any record directly, for file with fixed-length records. Useful for large amount of records.
+
+  #inline[File operation]
+  OS provides system calls for file operation.
+
+  #align(center)[#image("images/w11/file-operation.png", width: 70%)]
+  
+  File table storing additional information for an opened file, identifiable by file descriptor, stored in PCB of each process.
+  - File Pointer: current location in file
+  - Disk Location: Actual file location on disk
+  - Open Count: number of processes opening the file
+  #align(center)[#image("images/w11/unix-file-descriptor.png", width: 70%)]
+]
+
+== Directory
+#concept-block[
+  Directory provides logical grouping of files.
+
+  1. Single-Level: Every file exists in a single directory
+  2. Tree-Structure: Directories can recursively embedded in other directories
+  3. DAG: Tree-Structure with special hard link (`ln`, file only) / symbolic link (`ln -s` file or directory) from directory
+  4. General Graph: DAG with cycles. Not desirable but can be created with symbolic link in unix.
+]
+
+== Unix File Operation
+#concept-block[
+  Uses `<sys/types.h>`, `<sys/stat.h>`, `<fcntl.h>`. Files are accessed *byte-by-byte* (no data interpretation), identified by a *file descriptor* (integer).
+
+  #inline[`open()`]
+  *`int open(char *path, int flags)`* opens/creates `path`, returns a *file descriptor* ($>=0$) or $-1$ on failure.
+  - `flags`: bitwise-OR'd options — read/write/read+write mode, truncate, append, create if not exists, etc.
+  - e.g. `open("data.txt", O_RDONLY)`, `open("data.txt", O_RDWR | O_CREAT)`
+  - Default fds by convention: `STDIN` (0), `STDOUT` (1), `STDERR` (2)
+
+  #inline[`read()`]
+  *`int read(int fd, void *buf, int n)`* reads up to `n` bytes from the *current offset* into `buf`. Returns bytes read ($0..n$), where $< n$ means *EOF reached*.
+  - *Sequential*: starts at current offset, increments it by bytes read
+
+  #inline[`write()`]
+  *`int write(int fd, void *buf, int n)`* writes up to `n` bytes from `buf` at the *current offset*. Returns bytes written ($>=0$), or $-1$ on error (e.g. exceeds file size limit, quota, disk space).
+  - *Sequential*: starts at current offset, increments it by bytes written; can grow the file past EOF to *append* data
+
+  #inline[`lseek()`]
+  *`off_t lseek(int fd, off_t offset, int whence)`* moves the current position by `offset`. Returns new offset, or $-1$ on error. Can seek *beyond EOF*.
+  - `offset`: positive = forward, negative = backward
+  - `whence`: `SEEK_SET` (absolute, from start), `SEEK_CUR` (relative to current), `SEEK_END` (relative to end)
+
+  #inline[`close()`]
+  *`int close(int fd)`* closes `fd`: it becomes *reusable*, kernel *frees associated data structures*. Returns $0$ on success, $-1$ on error.
+  - Process termination *automatically closes* all open files
+]
