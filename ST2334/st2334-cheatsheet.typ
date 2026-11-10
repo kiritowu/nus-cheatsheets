@@ -913,3 +913,143 @@ $
 //     P(D=1) approx 0.301, quad P(D=9) approx 0.046
 //   $
 // ]
+
+= Sampling and Sampling Distributions
+#concept-block[
+  *Sampling is a subset* of the population. Population is the total set of all possible observations of an experiment.
+  - Finite population consist of finite number of observations.
+  - Infinite population consist of infinitely many (countably or uncountably) observations.
+
+  #inline[Random Sampling]
+
+  *Simple random sampling (SRS)* selects subset $n$ from $N$ population, where every subset has the same probability of being selected.
+
+  For a specific subset $S$ of size $n$, the probability of selecting with replacement is given by, if $n$ is known:
+
+  $
+  P(S) = 1 \/ binom(N,n)
+  $
+
+  #inline[Statistics and Sampling Distributions]
+
+  *Statistic* is a random variable: function that maps a random sample of $n$ observations $(X_1, ..., X_n)$ to a real number.
+
+  $
+    "Statistic" : (X_1, ..., X_n) -> f(X_1, ..., X_n)
+  $
+
+  *Sampling Distribution* is the probability distribution of a statistic. $P(overline(X) = overline(x))$
+
+]
+== Sample Mean as estimator of Population Mean and Variance
+#concept-block[
+  *Sample Mean*, $overline(X)$:
+  $
+  overline(X) = 1/n sum_(i=1)^n X_i
+  $
+
+  *Sample Variance*, $S^2$:
+  $
+  S^2 = 1/(n-1) sum_(i=1)^n (X_i - overline(X))^2
+  $
+
+  #inline[Sample Mean as estimator of Population Mean and Variance]
+
+  With multiple random samples, sample means can be used as estimators of population mean and population variance.
+
+  *Population Mean* can be estimated by the expected value of the sample means.
+  $
+  mu_X = E(overline(X)) = mu_overline(X)
+  $
+
+  *Population Variance* can be estimated by the variance of the sample mean.
+  $
+  sigma_X^2 / n = V(overline(X)) = sigma_overline(X)^2
+  $
+  - As $n -> infinity$, $sigma_overline(X) -> 0$ $=>$ $overline(X) -> mu_X$
+
+  *Standard Error*, $sigma_overline(X)$ is the standard deviation of the sample means.
+  
+  #inline[Law of Large Numbers (LLN)]
+
+  *Law of Large Numbers* states that as the sample size $n -> infinity$, the sample mean will converge to the population mean, for any $epsilon > 0$.
+
+  $
+    P( bar(overline(X) - mu_X) > epsilon) -> 0
+  $
+
+  #inline[Central Limit Theorem (CLT)]
+  *Central Limit Theorem* states that as the sample size $n -> infinity$, the distribution of the sample mean will converge to a normal distribution.
+
+  $
+    "As" n -> infinity, overline(X) -> N(mu_X, sigma_X^2 / n) \
+    (overline(X) - mu_X) / sqrt(sigma_X^2 \/ n) -> Z ~ N(0,1)
+  $
+
+  Depending on the distribution of the population, different number of samples are needed to approximate the normal distribution.
+  - For symmetric population with no outliers, $n in [15,20]$
+  - For moderately skewed population (like exponential or $chi^2$), $n in [30,50]$
+  - For extremely skewed population CLT may not be apppropriate even with 1000 samples.
+]
+== Sampling Distributions
+#concept-block[
+  *Chi-square distribution* $chi^2(n)$ with $n$ degrees of freedom is the distribution of the sum of the squares of $n$ independent standard normal random variables.
+
+  $
+    chi^2(n) = Z_1^2 + ... + Z_n^2 = sum_(i=1)^n Z_i^2
+  $
+
+  Let $U ~ chi^2(n)$ with $n$ degrees of freedom,
+  - $E(U) = n$
+  - $V(U) = 2n$
+  - For large $n$, $U -> N(n, 2n)$
+  
+  Let $Y_1 ~ chi^2(n_1)$ and $Y_2 ~ chi^2(n_2)$ are independent random variables $ => Y_1 + Y_2 ~ chi^2(n_1 + n_2)$
+
+  Let $Y ~ chi^2(n)$, $chi^2(n;alpha) in Y$ and 
+  $
+    P(Y > chi^2(n;alpha)) = alpha
+  $
+
+  When the *population is normal* $N(mu, sigma^2)$, the ratio of sample variance and population variance follows Chi-square distribution with $n-1$ degrees of freedom.
+  $
+    (n-1) S^2 / sigma^2 = (sum^n_(i=1) (X_i - mu_X)^2) / sigma^2 ~ chi^2(n-1)
+  $
+
+  #inline[Student's $t$-distribution]
+
+  *Student's $t$-distribution* $t(n)$ with $n$ degrees of freedom is ration of two independent random variables
+  $
+    t(n) = Z / sqrt(U \/ n); quad U ~ chi^2(n), quad Z ~ N(0,1), quad Z perp U
+  $
+  
+  Let $T ~ t(n)$,
+  - $E(T) = 0$
+  - $V(T) = n \/ (n-2)$ for $n > 2$
+  - As $n -> infinity$, $t(n) -> Z$
+  $
+    P(T > t_(n;alpha)) = alpha
+  $
+
+  When $X_i$ are i.i.d. $N(mu, sigma^2)$, the ratio of sample mean and sample standard deviation follows Student's $t$-distribution with $n-1$ degrees of freedom.
+  $
+    (overline(X) - mu) / (S \/ sqrt(n)) ~ t(n-1)
+  $
+
+  #inline[F-distribution]
+
+  *F-distribution* $F(n_1, n_2)$ with $n_1$ and $n_2$ degrees of freedom is the distribution of the ratio of two independent Chi-square random variables with $n_1$ and $n_2$ degrees of freedom.
+  $
+    F(n_1, n_2) = (Y_1 \/ n_1) / (Y_2 \/ n_2); quad Y_1 ~ chi^2(n_1), quad Y_2 ~ chi^2(n_2), quad Y_1 perp Y_2
+  $
+
+  Let $F ~ F(n_1, n_2)$,
+  - $E(F) = n_2 \/ (n_2-2)$ for $n_2 > 2$
+  - $V(F) = 2n_2^2 (n_1 + n_2 - 2) \/ (n_1 (n_2-2)^2 (n_2-4))$ for $n_2 > 4$
+  // - As $n_1, n_2 -> infinity$, $F -> chi^2(n_1) \/ n_1 \/ chi^2(n_2) \/ n_2$
+  - For $F ~ F(n_1, n_2)$, $(1 \/ F) ~ F(n_2, n_1)$
+  $
+    P(F > F_(n_1, n_2;alpha)) = alpha \
+    F_(n_1, n_2; 1 - alpha) = 1 \/ F_(n_2, n_1; alpha)
+  $
+]
