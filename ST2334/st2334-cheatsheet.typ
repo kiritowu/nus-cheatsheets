@@ -1031,7 +1031,7 @@ $
     P(T > t_(n;alpha)) = alpha
   $
 
-  When $X_i$ are i.i.d. $N(mu, sigma^2)$, the ratio of sample mean and sample standard deviation follows Student's $t$-distribution with $n-1$ degrees of freedom.
+  When $X_i$ are i.i.d. $N(mu, sigma^2)$, the ratio of sample mean and sample standard deviation follows Student's $t$-distribution with $n-1$ degrees of freedom. (Used when $sigma$ is unknown and $n$ is small)
   $
     (overline(X) - mu) / (S \/ sqrt(n)) ~ t(n-1)
   $
@@ -1052,4 +1052,89 @@ $
     P(F > F_(n_1, n_2;alpha)) = alpha \
     F_(n_1, n_2; 1 - alpha) = 1 \/ F_(n_2, n_1; alpha)
   $
+]
+
+= Estimations
+#concept-block[
+  *Estimator* $Phi$, is a formula that calculate an estimate (population parameter) based on random sample data.
+
+  *Unbiased estimator* is an estimator $Phi$ that has an expected value / mean, equal to the population parameter $theta$.
+  $
+    E(Phi) = theta; quad E(overline(X)) = mu_X; quad E(S^2) = sigma^2
+  $
+
+  *Maxiumum Error of an Estimate* $E$, for confidence level $1 - alpha$ is given by:
+  $
+  E = z_(alpha\/2)  sigma/ sqrt(n) 
+  $
+  $
+  P(|overline(X) - mu_X| <= z_(alpha\/2)  sigma/ sqrt(n)) = P( -E < overline(X) - mu_X < E) = 1-alpha \
+  $
+
+  - $z_alpha$ is the critical value of the standard normal distribution $Z ~ N(0,1)$ for the confidence level $1 - alpha$.
+  - Probability applies on estimated value, not on sample statistics ($overline(X)$, $S^2$, etc.) i.e. its a boolean outcome if sample mean is within the confidence interval.
+
+ *Minimum Sample Size* $n$ for a given maximum error $E$ and confidence level $1 - alpha$ is given by:
+  $
+  n = ceil((z_(alpha\/2)  sigma/ E_0)^2)
+  $
+
+  Depending on the information available, we select different distributions accordingly:
+  #block(breakable: false)[
+    #table(
+      columns: (auto, auto, auto, 1fr, 1fr, 1.15fr),
+      inset: (x: 2pt, y: 2pt),
+      align: center + horizon,
+      stroke: 0.4pt,
+      [Population], [$sigma$], [$n$], [Statistic], [$E$], [$n$ for desired $E_0$ and $alpha$],
+      [Normal], [known], [any],
+      [$ Z = frac(overline(X) - mu, sigma \/ sqrt(n)) $],
+      [$ z_(alpha\/2) dot.c frac(sigma, sqrt(n)) $],
+      [$ (frac(z_(alpha\/2) dot.c sigma, E_0))^2 $],
+      [any], [known], [large],
+      [$ Z = frac(overline(X) - mu, sigma \/ sqrt(n)) $],
+      [$ z_(alpha\/2) dot.c frac(sigma, sqrt(n)) $],
+      [$ (frac(z_(alpha\/2) dot.c sigma, E_0))^2 $],
+      [Normal], [unknown], [small],
+      [$ T = frac(overline(X) - mu, S \/ sqrt(n)) $],
+      [$ t_(n-1";"alpha\/2) dot.c frac(s, sqrt(n)) $],
+      [$ (frac(t_(n-1";"alpha\/2) dot.c s, E_0))^2 $],
+      [any], [unknown], [large],
+      [$ Z = frac(overline(X) - mu, S \/ sqrt(n)) $],
+      [$ z_(alpha\/2) dot.c frac(s, sqrt(n)) $],
+      [$ (frac(z_(alpha\/2) dot.c s, E_0))^2 $],
+    )
+  ]
+]
+== Confidence Intervals
+#concept-block[
+  *Confidence Interval* $"CI" = (a,b)$, is a range of values that has a probability of $1 - alpha$ to contain the population parameter $theta \/ mu_X$.
+  $
+    P(a < theta < b) = 1 - alpha \
+    (a,b) = overline(x) plus.minus E
+  $
+]
+== Comparing Two Population
+#concept-block[
+   Given $X_i ~ N(mu_X, sigma_X^2)$ and $Y_i ~ N(mu_Y, sigma_Y^2)$ with $n_X$ and $n_Y$ samples $X_i perp Y_i$
+
+  *Independent Samples and Unequal Variances*:
+  $
+    Z = ((overline(X) - overline(Y))-(mu_1 - mu_)) / sqrt(sigma_X^2 / n_X + sigma_Y^2 / n_Y) ~ N(0,1) \
+    "CI" = (overline(X) - overline(Y)) plus.minus z_(alpha\/2) sqrt(sigma_X^2 / n_X + sigma_Y^2 / n_Y)
+  $
+
+  *Independent Samples and Equal Variances*:
+  $
+    Z = ((overline(X) - overline(Y))-(mu_1 - mu_2)) / (sigma sqrt(1/n_X + 1/n_Y)) ~ N(0,1) \
+  $
+
+  *Pooled Estimator*: $S^2_p$
+  $
+    S^2_p = ((n_X-1)S^2_X + (n_Y-1)S^2_Y) / (n_X + n_Y - 2) \
+    T = ((overline(X) - overline(Y))-(mu_1 - mu_2)) / (S_p sqrt(1/n_X + 1/n_Y)) ~ t_(n_X + n_Y - 2; alpha\/2)  "For small sample size"
+  $
+
+  *Paired Data*: $D_i = X_i - Y_i$
+  Carry out the same with $D_i$ as independent samples.
 ]
