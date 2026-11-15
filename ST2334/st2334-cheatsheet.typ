@@ -1105,22 +1105,19 @@ $
       [$ (frac(z_(alpha\/2) dot.c s, E_0))^2 $],
     )
   ]
-]
-== Confidence Intervals
-#concept-block[
+  #inline[Confidence Interval]
   *Confidence Interval* $"CI" = (a,b)$, is a range of values that has a probability of $1 - alpha$ to contain the population parameter $theta \/ mu_X$.
   $
     P(a < theta < b) = 1 - alpha \
     (a,b) = overline(x) plus.minus E
   $
-]
-== Comparing Two Population
-#concept-block[
+
+  #inline[Comparing Two Population]
    Given $X_i ~ N(mu_X, sigma_X^2)$ and $Y_i ~ N(mu_Y, sigma_Y^2)$ with $n_X$ and $n_Y$ samples $X_i perp Y_i$
 
   *Independent Samples and Unequal Variances*:
   $
-    Z = ((overline(X) - overline(Y))-(mu_1 - mu_)) / sqrt(sigma_X^2 / n_X + sigma_Y^2 / n_Y) ~ N(0,1) \
+    Z = ((overline(X) - overline(Y))-(mu_1 - mu_2))/sqrt(sigma_X^2 / n_X + sigma_Y^2 / n_Y) ~ N(0,1) \
     "CI" = (overline(X) - overline(Y)) plus.minus z_(alpha\/2) sqrt(sigma_X^2 / n_X + sigma_Y^2 / n_Y)
   $
 
@@ -1137,4 +1134,14 @@ $
 
   *Paired Data*: $D_i = X_i - Y_i$
   Carry out the same with $D_i$ as independent samples.
+]
+= Hypothesis Testing
+#concept-block[
+  - Type I Error: $P("reject" H_0 | H_0 "is true") = alpha$
+  - Type II Error: $P("fail to reject" H_0 | H_0 "is false") = beta$
+  - Power of Test: $P("reject" H_0 | H_0 "is false") = 1 - beta$
+
+  *P-Value* is the probability of observing a test statistic as least as extreme as the observed test statistic, given the null hypothesis is true.
+  
+  Reject $H_0$ if p-value is less than $alpha$.
 ]
