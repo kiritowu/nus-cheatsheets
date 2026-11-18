@@ -950,7 +950,7 @@ $
 
   *Sample Variance*, $S^2$:
   $
-  S^2 = 1/(n-1) sum_(i=1)^n (X_i - overline(X))^2
+  S^2 = 1/(n-1) sum_(i=1)^n (X_i - overline(X))^2 = 1/(n-1) (sum_(i=1)^n X_i^2 - (sum_(i=1)^n X_i)^2/n)
   $
 
   #inline[Sample Mean as estimator of Population Mean and Variance]
@@ -1137,8 +1137,8 @@ $
 ]
 = Hypothesis Testing
 #concept-block[
-  - Type I Error: $P("reject" H_0 | H_0 "is true") = alpha$
-  - Type II Error: $P("fail to reject" H_0 | H_0 "is false") = beta$
+  - Type I Error: $P("reject" H_0 | H_0 "is true") = P(overline(x) in.not "CI" | mu = mu_0) = alpha$
+  - Type II Error: $P("fail to reject" H_0 | H_0 "is false") = P(overline(x) in "CI" | mu = mu_0) = beta$
   - Power of Test: $P("reject" H_0 | H_0 "is false") = 1 - beta$
 
   *P-Value* is the probability of observing a test statistic as least as extreme as the observed test statistic, given the null hypothesis is true.
