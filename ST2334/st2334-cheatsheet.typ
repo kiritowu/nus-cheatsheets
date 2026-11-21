@@ -531,70 +531,66 @@ Properties of Variance:
   $
     f_X (x) = cases(
       1/(b-a) & a<=x<=b,
-      0 & "otherwise"),
+      0 & "otherwise")
+    quad F_X (x) = cases(0 quad x<a, (x-a)/(b-a) quad a<= x <= b, 1 quad x>b) \
     quad E(x) = (a+b)/2,
     quad V(X) = (b-a)^2/12
   $
-
-  $
-    F_X (x) = cases(0 " "x<a, (x-a)/(b-a) " " a<= x <= b, 1 " "x>b)
-  $
+  
+  Maximum or Minimum of Uniform Distributions for $X_i ~ U(a,b)$:
+  #align(center)[
+    #table(
+    columns: (0.5fr, 1fr, 1fr),
+    stroke: 0.4pt,
+    [], [$Y_min = min(X_1, X_2, ..., X_n)$], [$Y_max = max(X_1, X_2, ..., X_n)$],
+    [F(x)], [$1 - ((b-x) / (b-a))^n$], [$((x-a) / (b-a))^n$],
+    [f(x)], [$n (b-x)^(n-1) / (b-a)^n$], [$n (x-a)^(n-1) / (b-a)^n$],
+    [E(X)], [$a + (b-a)/(n+1)$], [$a + (n (b-a))/(n+1)$],
+    [V(X)], [$(n (b-a)^2)/((n+1)^2 (n+2))$], [$(n (b-a)^2)/((n+1)^2 (n+2))$],
+  )
+  ]
 
 
  #inline[Exponential Distribution, $X ~ "Exp"(lambda)$]
-X be waiting time until the next event when events occur independently at a constant average rate.
-For $lambda > 0$, $lambda$ is the average event rate, Mean waiting time is $E(X) = 1/lambda$.
+ $X$ be waiting time until the next event when events occur independently at $lambda$ average event rate.
 $
   f_X (x) = cases(
     lambda e^(-lambda x) & "if " x >= 0,
     0                     & "if " x < 0,
-  ),
+  )
+  quad F_X (x) = cases(
+    1 - e^(-lambda x) & "if " x >= 0,
+    0                  & "if " x < 0,
+  ) \
   quad E(X) = 1/lambda,
   quad V(X) = 1/lambda^2
 $
 
-$
-  F_X (x) = P(X <= x)
-  = cases(
-    1 - e^(-lambda x) & "if " x >= 0,
-    0                  & "if " x < 0,
-  )
-$
-
-Hence, for $x >= 0$,
-$
-  P(X > x) = e^(-lambda x)
-$
-
-Let $mu = 1/lambda$. Then
+When $mu = 1/lambda$,
 $
   f_X (x) = cases(
     1/mu e^(-x/mu) & "if " x >= 0,
     0               & "if " x < 0,
-  )
-$
-
-$
-  E(X) = mu,
+  ),
+  quad F_X (x) = 1 - e^(-x/mu), 
+  quad E(X) = mu,
   quad V(X) = mu^2,
-  quad F_X (x) = 1 - e^(-x/mu)
 $
 
  #inline[Normal Distribution, $X~N(mu, sigma^2)$]
  $
-   f_X (x) = 1/(sqrt(2 pi ) sigma) e^(-(x-mu)^2/(2sigma^2)), -infinity < x < infinity, E(X) = mu, V(X) = sigma^2 \
-   Z = (X-mu)/(sigma) \
+   f_X (x) = 1/(sqrt(2 pi ) sigma) e^(-(x-mu)^2/(2sigma^2)), quad E(X) = mu, V(X) = sigma^2 \
+   Z = (X-mu)/(sigma) ~ N(0,1) \
    Phi(z) = F_Z (z) = P(Z < z) = integral^z_(-infinity) 1/sqrt(2pi) e^(-t^2/2) d t \ 
    P(x_1 < X < x_2) = Phi((x_2-mu)/sigma) - Phi((x_1-mu)/sigma) \
-   P(Z<-z) = P(Z>=z) = 1-Phi(z)
  $
- Quartile $alpha$
- $
-   P(Z >= z_alpha) = alpha
- $
+//  Quartile $alpha$
+//  $
+//    P(Z >= z_alpha) = alpha
+//  $
 
  #inline[Approximate Binomial using Normal Distribution]
- As $n -> infinity$ and $p$ is constant, we may approximate binomial distribution using normal distribution.
+ As $n -> infinity$ and $p$ is constant, binomial distribution $X ~ "Bin"(n,p)$ may be approximated with normal distribution $Z ~ N(0,1)$.
 
  $
    Z = (X - E(X))/(sqrt(V(X))) = (X - n p )/ (sqrt(n p (1-p)))
@@ -969,6 +965,9 @@ $
   - As $n -> infinity$, $sigma_overline(X) -> 0$ $=>$ $overline(X) -> mu_X$
 
   *Standard Error*, $sigma_overline(X)$ is the standard deviation of the sample means.
+  $
+  "SE" = sigma_overline(X) = sigma_X / sqrt(n); quad 1/4 sigma_X/sqrt(n) = sigma_X/sqrt(n_"new"); n_"new" = (1\/"ratio")^2 n
+  $
   
   #inline[Law of Large Numbers (LLN)]
 
@@ -1126,9 +1125,9 @@ $
     Z = ((overline(X) - overline(Y))-(mu_1 - mu_2)) / (sigma sqrt(1/n_X + 1/n_Y)) ~ N(0,1) \
   $
 
-  *Pooled Estimator*: $S^2_p$
+  *Pooled Estimator*: $S_p$
   $
-    S^2_p = ((n_X-1)S^2_X + (n_Y-1)S^2_Y) / (n_X + n_Y - 2) \
+    S_p = sqrt(((n_X-1)S^2_X + (n_Y-1)S^2_Y) / (n_X + n_Y - 2)) \
     T = ((overline(X) - overline(Y))-(mu_1 - mu_2)) / (S_p sqrt(1/n_X + 1/n_Y)) ~ t_(n_X + n_Y - 2; alpha\/2)  "For small sample size"
   $
 
