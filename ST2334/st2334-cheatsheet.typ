@@ -150,22 +150,25 @@
 // ]
 == Probability
 #concept-block[
-  *Probability* of an event A is a measure of the likelihood of the event occurring.
-
-  *Relative frequency* of A, when experiment is repeated $n$ times and event A occurs $m$ times, approaches $P(A)$ as $n -> infinity$:
-  $
-    P(A) = lim_{n -> infinity} m / n
-  $
+  *Probability* of an event $P(A)$ measures the likelihood of the event $A$ occurring.
 
   $
     0 <= P(A) <= 1
   $
   $
-    P(S) = 1
+    P(S) = 1 quad S "is sure event"
   $
   $
     P(A union B) = P(A) + P(B) - P(A inter B)
   $
+  #inline[Selection Probability]
+  1. Select k out of n without replacement $binom(n,k) \/ n^k$
+  2. Select k out of n with replacement $binom(n+k-1,k) \/ n^k$
+
+  #inline[Monty Hall Problem]
+  $C = {"Car behind first choosen door"}, W = {"Car behind one of the switched door"}$
+
+  $P(W) = P(W | C) P(C) + P(C') P(W | C') = 0*1/3 + 2/3 * 1 = 2/3$
 
   // #inline[Properties of Probability]
   // #align(center)[
@@ -225,7 +228,8 @@
   *Conditional Probability* ($P(A | B)$) is probability of A occurring given that B occurred.
 
   $
-    P(A | B) = P(A inter B) / P(B)= (P(A)P(B|A)) / P(B)
+    P(A | B) = P(A inter B) / P(B)= (P(A)P(B|A)) / P(B) \
+    P(A inter B) = P(A | B) P(B) "if" P(B) > 0
   $
 
   #inline[Simpson's Paradox]
@@ -234,11 +238,6 @@
     P(A | B inter C_i) >= P(A | B' inter C_i) forall i
   "but"
     P(A | B ) < P(A | B')
-  $
-
-  #inline[Multiplication Rule]
-  $
-    P(A inter B) = P(A | B) P(B) "if" P(B) > 0
   $
 ]
 
@@ -475,36 +474,35 @@ Properties of Variance:
 #concept-block[
 
   #block(breakable: false)[
-  $q = 1 - p$
   #table(
-    columns: (0.85fr, 1.1fr, 1.4fr, 0.85fr),
+    columns: 4,
     inset: (x: 2.5pt, y: 2.5pt),
     align: left + horizon,
     stroke: 0.4pt,
-    [Distribution], [pmf], [cdf], [$E(X), V(X)$],
-    [Discrete uniform $U(k)$],
-    [$ f(x) = 1/k, x in R_x $],
-    [$ F(x) = frac(|{x_i <= x}|, k) $],
-    [$ E(X) = frac(sum_i x_i, k) \ V(X) = frac(sum_i x_i^2, k) - mu^2 $],
-    [Bernoulli \ $X in {0,1}$],
-    [$ f(x) = p^x q^(1-x) $],
+    [Distribution], [$f(x)$, pmf], [$F(x)$, cdf], [$E(X), V(X)$],
+    [Discrete uniform $U(k)$ \ \#$k$ elements],
+    [$ 1/k "if " x in R_x $],
+    [$ frac(|{x_i <= x}|, k) $],
+    [$ E(X) = 1/k sum_i^k x_i \ V(X) = \ 1/k sum_i^k x_i^2 - mu^2 $],
+    [Bernoulli Trial\ $x$ success $1$ or failure $0$ ],
+    [$ p^x q^(1-x) $],
     [$ F(0)=q, F(1)=1 $],
     [$ E(X)=p \ V(X)=p q $],
-    [$"Bin"(n,p)$ \ \# successes],
-    [$ f(x) = binom(n,x) \ p^x q^(n-x) $],
-    [$ F(x) = sum_(i=0)^x binom(n,i) \ p^i q^(n-i) $],
+    [$"Bin"(n,p)$ \ $x$ successes in $n$ trials],
+    [$ binom(n,x) p^x q^(n-x) $],
+    [$ sum_(i=0)^x f(i) $],
     [$ E(X)=n p \ V(X)=n p q $],
-    [$"NB"(k,p)$ \ \# trials to $k$ successes],
-    [$ f(x) = binom(x-1,k-1) \ p^k q^(x-k) $],
-    [$ F(x) = sum_(i=k)^x binom(i-1,k-1) \ p^k q^(i-k) $],
-    [$ E(X)=k/p \ V(X)=(k q)/p^2 $],
-    [$"Geom"(p)="NB"(1,p)$ \ \# trials to 1st success],
-    [$ f(x) = q^(x-1) p $],
-    [$ F(x) = 1 - q^x $],
+    [$"NB"(k,p)$ \ $x$ trials till $k$ successes],
+    [$ binom(x-1,k-1)  p^k q^(x-k) $],
+    [$ sum_(i=k)^x f(i) $],
+    [$ E(X)=k/p \ V(X)= k q/p^2 $],
+    [$"Geom"(p)="NB"(1,p)$ \ $x$ trials to 1st success],
+    [$ q^(x-1) p $],
+    [$ 1 - q^x $],
     [$ E(X)=1/p \ V(X)=q/p^2 $],
-    [$"Poisson"(lambda)$ \ \# events in an interval],
-    [$ f(x) = frac(e^(-lambda) lambda^x, x!) $],
-    [$ F(x) = sum_(i=0)^x frac(e^(-lambda) lambda^i, i!) $],
+    [$"Poisson"(lambda)$ \ $x$ events in an interval],
+    [$ frac(e^(-lambda) lambda^x, x!) $],
+    [$ sum_(i=0)^x frac(e^(-lambda) lambda^i, i!) $],
     [$ E(X)=lambda \ V(X)=lambda $],
     [Poisson process \ $lambda = alpha T$],
     [same as Poisson],
@@ -538,18 +536,22 @@ Properties of Variance:
   $
   
   Maximum or Minimum of Uniform Distributions for $X_i ~ U(a,b)$:
+  $
+    F_"min" (x) = 1 - P(Y_min > x) = 1 - (P(X_1 > x) ... P(X_n > x)) = 1 - (1 - F_X (x))^n \ 
+    F_"max" (x) = P(Y_max < x) = P(X_1 < x) ... P(X_n < x) = (F_X (x))^n \
+  $
+
   #align(center)[
     #table(
     columns: (0.5fr, 1fr, 1fr),
     stroke: 0.4pt,
     [], [$Y_min = min(X_1, X_2, ..., X_n)$], [$Y_max = max(X_1, X_2, ..., X_n)$],
-    [F(x)], [$1 - ((b-x) / (b-a))^n$], [$((x-a) / (b-a))^n$],
     [f(x)], [$n (b-x)^(n-1) / (b-a)^n$], [$n (x-a)^(n-1) / (b-a)^n$],
+    [F(x)], [$1 - ((b-x) / (b-a))^n$], [$((x-a) / (b-a))^n$],
     [E(X)], [$a + (b-a)/(n+1)$], [$a + (n (b-a))/(n+1)$],
     [V(X)], [$(n (b-a)^2)/((n+1)^2 (n+2))$], [$(n (b-a)^2)/((n+1)^2 (n+2))$],
   )
   ]
-
 
  #inline[Exponential Distribution, $X ~ "Exp"(lambda)$]
  $X$ be waiting time until the next event when events occur independently at $lambda$ average event rate.
@@ -563,18 +565,8 @@ $
     0                  & "if " x < 0,
   ) \
   quad E(X) = 1/lambda,
-  quad V(X) = 1/lambda^2
-$
-
-When $mu = 1/lambda$,
-$
-  f_X (x) = cases(
-    1/mu e^(-x/mu) & "if " x >= 0,
-    0               & "if " x < 0,
-  ),
-  quad F_X (x) = 1 - e^(-x/mu), 
-  quad E(X) = mu,
-  quad V(X) = mu^2,
+  quad V(X) = 1/lambda^2,
+  quad P(X>x) = e^(-lambda x)
 $
 
  #inline[Normal Distribution, $X~N(mu, sigma^2)$]
