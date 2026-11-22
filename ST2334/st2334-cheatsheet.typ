@@ -28,7 +28,7 @@
   numbered-units: false,
 )
 
-= Basic Concepts of Probability
+= Probability
 // == Experiments, sample spaces, and events
 // #concept-block[
 //   - *Statistical Experiment* is a procedure that produces an observation.
@@ -148,8 +148,7 @@
 //     binom(n,r) = (n!)/(r!(n-r)!)
 //   $
 // ]
-== Probability
-#concept-block[
+  #concept-block[
   *Probability* of an event $P(A)$ measures the likelihood of the event $A$ occurring.
 
   $
@@ -162,13 +161,13 @@
     P(A union B) = P(A) + P(B) - P(A inter B)
   $
   #inline[Selection Probability]
-  1. Select k out of n without replacement $binom(n,k) \/ n^k$
-  2. Select k out of n with replacement $binom(n+k-1,k) \/ n^k$
+  1. Select k out of n *without* replacement $binom(n,k) \/ n^k$
+  2. Select k out of n *with* replacement $binom(n+k-1,k) \/ n^k$
 
   #inline[Monty Hall Problem]
-  $C = {"Car behind first choosen door"}, W = {"Car behind one of the switched door"}$
+  $C = {"Car behind first choosen door"}, W = {"Car behind switched door"}$
 
-  $P(W) = P(W | C) P(C) + P(C') P(W | C') = 0*1/3 + 2/3 * 1 = 2/3$
+  $P(W) = P(W | C) P(C) + P(C') P(W | C') = 0 + 2/3$
 
   // #inline[Properties of Probability]
   // #align(center)[
@@ -221,10 +220,7 @@
   //       $
   //     ],
   //   )]
-]
-== Conditional Probability
-
-#concept-block[
+#inline[Conditional Probability]
   *Conditional Probability* ($P(A | B)$) is probability of A occurring given that B occurred.
 
   $
@@ -239,10 +235,8 @@
   "but"
     P(A | B ) < P(A | B')
   $
-]
 
-== Independence
-#concept-block[
+#inline[Independence]
   Events A and B are *independent*, $A perp B <=>$ 
   $
     P(A inter B) = P(A) P(B)
@@ -253,10 +247,8 @@
   - $S perp A$ for all events $A$; $emptyset perp A$ for all events $A$
   - If $A perp B$, then $A perp B'$, $A' perp B$, $A' perp B'$
   - Independence cannot be expressed in terms of venn diagram
-]
 
-== Bayes' Theorem
-#concept-block[
+  #inline[Bayes' Theorem]
   $
     P(A | B) = P(A inter B) / P(B) = (P(B | A) P(A)) / (sum^n_{i=1} P(B | A_i) P(A_i)) 
   $
@@ -265,10 +257,10 @@
 
   Suppose $A_1, A_2, ..., A_n$ is a partition of the sample space $S$
   $
-  P(B) = sum_{i=1}^n P(B inter A_i) = sum^n_{i=1} P(B | A_i) P(A_i) \
-  P(B) = P(A) P(B | A) + P(A') P(B | A')
+  P(B) = sum_{i=1}^n P(B inter A_i) = sum^n_{i=1} P(A_i) P(B | A_i) \
+  = P(A) P(B | A) + P(A') P(B | A')
   $
-]
+  ]
 
 = Random Variable
 #concept-block([
@@ -289,11 +281,8 @@ $
   {X = x} = {s in S : X(s) = x}, {X=x}in S \
   {X in A} = {s in S : X(s) in A}, {X in A} in S
 $
-])
 
-== Probability Distribution
-#concept-block([
-  #inline[Probability Mass Function (pmf)]
+  #inline[Probability Mass Function (pmf), $f(x)$]
   *Discrete random variable* $X_D$, when $R_X = {x_1, x_2, ...}$ is finite or countable.
 
   *pmf, $f(x)$* for ${X=x}$
@@ -306,7 +295,7 @@ $
   2. $forall x_i in.not R_X, f(x_i) = 0$
   3. $sum^infinity_(i=1) f(x_i) = sum_(x_i in R_X) f(x_i) = 1$
 
-  #inline[Probability Density Function (pdf)]
+  #inline[Probability Density Function (pdf), $f(x)$]
 
   *Continuous random variable* $X_C$, when $R_X in [a,b]$ is an interval(s).
 
@@ -323,9 +312,8 @@ $
   Other key properties,
   - Specific point is zero: $P(X=x_i) = integral^(x_i)_(x_i) f(x) d x = 0$
   - Endpoint doesn't matter: $P(a <= X <= b) = P(a < X < b)$
-])
-== Cumulative Distribution Function
-#concept-block([
+
+#inline[Cumulative Distribution Function, $F(x)$]
   *Cumulative Distribution Function (cdf), F(x)* for any random variable X is defined as
   $
     F(x) = P(X <= x) = cases(f(0)+f(1)+...+f(x) "if X is discrete", integral_(-infinity)^x f(t) d t "if X is continuous")
@@ -340,9 +328,7 @@ $
   $
     f(x) = F'(x) = (d)/(d x) integral^x_(-infinity) f(t) d t
   $
-])
-== Expectation and Variance
-#concept-block([
+#inline[Expectation and Variance]
 *Expectations* or mean of X is defined by: ($mu_X $ may not be in $R_X$)
 $
   mu_X = E(X) = sum_(x_i in R_X) x_i f(x_i) 
@@ -353,13 +339,12 @@ $
 Properties of Expectation:
 1. $E(a X + b) = a E(X) + b$
 2. $E(X + Y) = E(X)+ E(Y)$
-3. $E[g(X)] = sum_(x in R_X) g(x) f(x) " or " integral g(x) f(x) d x$
-4. $E(x^2) = sum x^2 f(x)$
+3. $E[g(X)] = sum_(x in R_X) g(x) f(x) " or " integral g(x) f(x) d quad$ E.g. $E(x^2) = sum x^2 f(x)$
 
 #inline[Variance]
-*Variance* of X is defined as $sigma_X^2$
+*Variance* of X is defined as $V(X) = sigma_X^2$
 $
-  sigma_X^2 = V(X) = E[(X-mu_X)^2] = E(X^2) - [E(X)]^2\
+  V(X) = E[(X-mu_X)^2] = E(X^2) - [E(X)]^2\
   = sum_(x in R_X) (x-mu_X)^2 f(x) " or " integral^infinity_(-infinity) (x-mu_X)^2 f(x) d x \
 $
 
@@ -376,11 +361,9 @@ Properties of Variance:
 #concept-block[
  - *n-dimentional random variable, $(X,Y, ...)$* $= (X(s), Y(s), ...) forall s in S$
  - *Range Space* $R_(X,Y) = {(x,y) | x = X(s), y = Y(s), forall s in S}$
- - *Discrete / Continuous* two-dimensional random variable depends if *both* random variable is countable and finite or vice-versa.
-]
+//  - *Discrete / Continuous* two-dimensional random variable depends if *both* random variable is countable and finite or vice-versa.
 
-== Joint, Marginal and Conditional Distribution
-#concept-block[
+#inline[Joint, Marginal and Conditional Distribution]
  *Joint probability (mass) function, jpf* is defined by $(x,y) in R_(X,Y)$
  $
    f_(X,Y) (x,y) = P(X=x, Y=y)
@@ -389,7 +372,7 @@ Properties of Variance:
  Well-defined jpf $X,Y$ of both discrete and continuous random variable satisfies:
  1. $f_(X,Y) (x,y) >= 0, forall (x,y) in R_(X,Y)$
  2. $f_(X,Y) (x,y) = 0, forall (x,y) in.not R_(X,Y)$
- 3. $sum^infinity_(i=1) sum^infinity_(j=1) f_(X,Y) (x_i, y_i) = sum^infinity_(i=1) sum^infinity_(j=1) P(X = x_i, Y =y_j) = integral^infinity_(-infinity) integral^infinity_(-infinity) f_(X,Y) (x,y) d x d y = 1$
+ 3. $sum^infinity_(i=1) sum^infinity_(j=1) f_(X,Y) (x_i, y_i)  = integral^infinity_(-infinity) integral^infinity_(-infinity) f_(X,Y) (x,y) d x d y = 1$
 
 #inline[Marginal Probability Distribution]
 
@@ -409,15 +392,9 @@ Properties of Variance:
 
   - $f_(Y | X) (y | x)$ is defined only for $x$ such that $f_X (x) > 0$ 
   - $f_(Y | X) ( y | x)$ is not a probability function and therefore, sum $!=$ 1
-  
-  Applications:
-  - $P(Y <= y | X = x) = integral^y_(-infinity) f_(Y|X) (t|x) d t$
-  - Regression function $E(Y | X=x) = integral^infinity_(-infinity) y f_(Y|X) (y|x) d y$
-  
-]
 
-== Independent Random Variables
-#concept-block[
+
+#inline[Independent Random Variables]
   Random variable $X perp Y$ are *independent* $<=>$
   $
     f_(X, Y) (x,y) = f_X (x) f_Y (y) \
@@ -435,10 +412,8 @@ Properties of Variance:
   - $P(X <= x ; Y <= y) = P(X <= x) P(Y<=y)$
   - Let $g 1(.), g 2 (.)$ be arbitrary functions, $g 1 (X), g 2 (Y)$ are independent
   - $f_X (x) > 0 => f_(Y | X) ( y | x) = f_Y (y)$
-]
 
-== Expectation, Covariance and Correlation Coefficient
-#concept-block[
+#inline[Expectation, Covariance and Correlation Coefficient]
   *Expectation*, $E(g(X,Y))$:
   $
     E(g(X,Y)) = sum_x sum_y g(x,y) f_(X,Y) (x,y) = integral^infinity_(-infinity) integral^infinity_(-infinity) g(x,y) f_(X,Y) (x,y) d y d x
@@ -571,7 +546,7 @@ $
 
  #inline[Normal Distribution, $X~N(mu, sigma^2)$]
  $
-   f_X (x) = 1/(sqrt(2 pi ) sigma) e^(-(x-mu)^2/(2sigma^2)), quad E(X) = mu, V(X) = sigma^2 \
+   f_X (x) = 1/(sqrt(2 pi ) sigma) e^(-(x-mu)^2/(2sigma^2)), quad E(X) = mu, quad V(X) = sigma^2 \
    Z = (X-mu)/(sigma) ~ N(0,1) \
    Phi(z) = F_Z (z) = P(Z < z) = integral^z_(-infinity) 1/sqrt(2pi) e^(-t^2/2) d t \ 
    P(x_1 < X < x_2) = Phi((x_2-mu)/sigma) - Phi((x_1-mu)/sigma) \
@@ -590,31 +565,32 @@ $
 
  Use when $n p > 5$ and $n (1 - p) > 5$
 
- Continuity Correction
-  $
-P(X = k) approx P(k - 1/2 < X < k + 1/2)
-$
+//  Continuity Correction
+//   $
+// P(X = k) approx P(k - 1/2 < X < k + 1/2)
+// $
 
-$
-P(a <= X <= b) &approx P(a - 1/2 < X < b + 1/2) \
-P(a < X <= b)  &approx P(a + 1/2 < X < b + 1/2) \
-P(a <= X < b)  &approx P(a - 1/2 < X < b - 1/2) \
-P(a < X < b)   &approx P(a + 1/2 < X < b - 1/2)
-$
+// $
+// P(a <= X <= b) &approx P(a - 1/2 < X < b + 1/2) \
+// P(a < X <= b)  &approx P(a + 1/2 < X < b + 1/2) \
+// P(a <= X < b)  &approx P(a - 1/2 < X < b - 1/2) \
+// P(a < X < b)   &approx P(a + 1/2 < X < b - 1/2)
+// $
 
-$
-P(X <= c) = P(0 <= X <= c)
-approx P(-1/2 < X < c + 1/2)
-$
+// $
+// P(X <= c) = P(0 <= X <= c)
+// approx P(-1/2 < X < c + 1/2)
+// $
 
-$
-P(X > c) = P(c < X <= n)
-approx P(c + 1/2 < X < n + 1/2)
-$ 
+// $
+// P(X > c) = P(c < X <= n)
+// approx P(c + 1/2 < X < n + 1/2)
+// $ 
 
 ]
 
-// = Live Session Application Formulas
+= Live Session Application Formulas
+#concept-block[
 
 // // ============================================================
 // // WEEK 1
@@ -717,7 +693,7 @@ $
 //   $
 //     P(D | C inter T) = frac(P(C inter T | D)P(D), P(C inter T)), quad
 //     P(C inter T) = sum_(D in {L,M,H}) P(D)P(C inter T | D) \
-//     => P(D | C inter T) = frac(P(D)P(C|D)P(T|D), sum_(d in {L,M,H}) P(d)P(C|d)P(T|d))
+//     => p(d | c inter t) = frac(P(D)P(C|D)P(T|D), sum_(d in {L,M,H}) P(d)P(C|d)P(T|d))
 //   $
 
 //   #inline[Problem 4: Naive Bayes]
@@ -758,24 +734,24 @@ $
 //     E(X) = sum_(k=1)^m P(X>=k) = 1+frac(1,2)+frac(1,4)+dots+frac(1,2^(m-1)) = 2-frac(2,2^m)
 //   $
 
-//   #inline[Problem 3: Inverse-CDF Sampling]
+  // #inline[Week 3: Problem 3: Inverse-CDF Sampling]
 
-//   General: $U ~ U(0,1)$, $X = F_X^(-1)(U)$. Pareto $f_X(x)=2/x^3$, $x>=1$:
-//   $
-//     F_X(x)=1-frac(1,x^2), quad
-//     1-frac(1,X^2)=U => X=frac(1,sqrt(1-U)) \
-//     E(X)=2 "but" E(X^2)=infinity => V(X)=infinity
-//   $
+  // General: $U ~ U(0,1)$, $X = F_X^(-1)(U)$. Pareto $f_X(x)=2/x^3$, $x>=1$:
+  // $
+  //   F_X(x)=1-frac(1,x^2), quad
+  //   1-frac(1,X^2)=U => X=frac(1,sqrt(1-U)) \
+  //   E(X)=2 "but" E(X^2)=infinity => V(X)=infinity
+  // $
 
-//   #inline[Problem 4: Completing a Collection]
+  #inline[Week 3: Problem 4: Completing a Collection]
 
-//   $d$ equally likely designs; after $j-1$ designs collected:
-//   $
-//     p_j = frac(d-j+1,d), quad
-//     W_j ~ "Geom"(p_j), quad
-//     E(W_j) = frac(1,p_j) = frac(d,d-j+1) \
-//     T=sum_(j=1)^d W_j => E(T) = d (1+frac(1,2)+dots+frac(1,d)) = d H_d
-//   $
+  Given $n$ equally likely designs; after $i-1$ designs collected:
+  $
+    p_i = frac(n-i+1,n), quad
+    W_i ~ "Geom"(p_i), quad
+    E(W_i) = frac(1,p_i) = frac(n,n-i+1) \
+    T=sum_(i=1)^n W_i => E(T) = n (1+frac(1,2)+dots+frac(1,n)) = n H_n
+  $
 // ]
 
 
@@ -783,44 +759,41 @@ $
 // // WEEK 4
 // // ============================================================
 
-// == Week 4: Joint Distributions
+  #inline[Week 4: Problem 1: First & Last Response Times]
 
-// #concept-block[
-//   #inline[Problem 1: First & Last Response Times]
+  $U=min(T_1,T_2)$, $V=max(T_1,T_2)$, remaining wait $D=V-U$.
+  $
+    f_T(t) = lambda^2 t e^(-lambda t), t>=0, quad
+    S(t) = P(T>t) = e^(-lambda t)(1+lambda t) \
+    0<u<v: f_(U,V)(u,v) = 2 f_T(u) f_T(v) = 2 lambda^4 u v e^(-lambda(u+v)), quad
+    f_U(u) = 2 f_T(u) S(u) \
+    f_(V|U)(v|u) = frac(f_(U,V)(u,v),f_U(u)) = frac(f_T(v),S(u)), quad
+    E(V|U=u) = u+frac(u+2/lambda,1+lambda u) \
+    E(D|U=u) = frac(1,lambda) (1+frac(1,1+lambda u))
+  $
 
-//   $U=min(T_1,T_2)$, $V=max(T_1,T_2)$, remaining wait $D=V-U$.
-//   $
-//     f_T(t) = lambda^2 t e^(-lambda t), t>=0, quad
-//     S(t) = P(T>t) = e^(-lambda t)(1+lambda t) \
-//     0<u<v: f_(U,V)(u,v) = 2 f_T(u) f_T(v) = 2 lambda^4 u v e^(-lambda(u+v)), quad
-//     f_U(u) = 2 f_T(u) S(u) \
-//     f_(V|U)(v|u) = frac(f_(U,V)(u,v),f_U(u)) = frac(f_T(v),S(u)), quad
-//     E(V|U=u) = u+frac(u+2/lambda,1+lambda u) \
-//     E(D|U=u) = frac(1,lambda) (1+frac(1,1+lambda u))
-//   $
+  #inline[Week 4: Problem 2: Runs in a Random Permutation]
 
-//   #inline[Problem 2: Runs in a Random Permutation]
+  Descent indicator $D_i = 1_{A_i>A_(i+1)}$; runs $R=1+sum_(i=1)^(n-1) D_i$. Non-adjacent descents have covariance 0.
+  $
+    P(D_i=1)=frac(1,2), V(D_i)=frac(1,4) => E(R)=frac(n+1,2) \
+    P(D_i=1,D_(i+1)=1)=frac(1,6) => "cov"(D_i,D_(i+1)) = frac(1,6)-frac(1,4) = -frac(1,12) \
+    V(R) = (n-1)frac(1,4) + 2(n-2)(-frac(1,12)) = frac(n+1,12)
+  $
 
-//   Descent indicator $D_i = 1_{A_i>A_(i+1)}$; runs $R=1+sum_(i=1)^(n-1) D_i$. Non-adjacent descents have covariance 0.
-//   $
-//     P(D_i=1)=frac(1,2), V(D_i)=frac(1,4) => E(R)=frac(n+1,2) \
-//     P(D_i=1,D_(i+1)=1)=frac(1,6) => "cov"(D_i,D_(i+1)) = frac(1,6)-frac(1,4) = -frac(1,12) \
-//     V(R) = (n-1)frac(1,4) + 2(n-2)(-frac(1,12)) = frac(n+1,12)
-//   $
+  // #inline[Problem 3: One-Time Pad]
 
-//   #inline[Problem 3: One-Time Pad]
+  // $C=X xor K$ with fair independent key $K$: $P(X=x,C=c) = 1/2 P(X=x)$ $=>$ $P(C=c)=1/2$ and $X perp C$. Reusing the same key: $C_1=X_1 xor K$, $C_2=X_2 xor K$ $=>$ $C_1 xor C_2 = X_1 xor X_2$.
 
-//   $C=X xor K$ with fair independent key $K$: $P(X=x,C=c) = 1/2 P(X=x)$ $=>$ $P(C=c)=1/2$ and $X perp C$. Reusing the same key: $C_1=X_1 xor K$, $C_2=X_2 xor K$ $=>$ $C_1 xor C_2 = X_1 xor X_2$.
+  // #inline[Problem 4: Sampling Without Replacement]
 
-//   #inline[Problem 4: Sampling Without Replacement]
-
-//   $N$: population size; $n$: fixed sample size; $p=n/N$.
-//   $
-//     P(I_i=1)=frac(n,N), quad
-//     P(I_i=1,I_j=1) = frac(binom(N-2,n-2), binom(N,n)) = frac(n(n-1),N(N-1)) \
-//     "cov"(I_i,I_j) = -frac(n(N-n), N^2(N-1)) = -frac(p(1-p),N-1), quad
-//     rho(I_i,I_j) = -frac(1,N-1)
-//   $
+  // $N$: population size; $n$: fixed sample size; $p=n/N$.
+  // $
+  //   P(I_i=1)=frac(n,N), quad
+  //   P(I_i=1,I_j=1) = frac(binom(N-2,n-2), binom(N,n)) = frac(n(n-1),N(N-1)) \
+  //   "cov"(I_i,I_j) = -frac(n(N-n), N^2(N-1)) = -frac(p(1-p),N-1), quad
+  //   rho(I_i,I_j) = -frac(1,N-1)
+  // $
 // ]
 
 
@@ -856,57 +829,55 @@ $
 // ]
 
 
-// // ============================================================
-// // WEEK 6
-// // ============================================================
+// ============================================================
+// WEEK 6
+// ============================================================
 
-// == Week 6: Continuous Distribution Models
 
-// #concept-block[
-//   #inline[Problem 1: Restarting a Task]
+  // #inline[Problem 1: Restarting a Task]
 
-//   $X$: fresh attempt duration; $s$: elapsed time. Expected remaining time $r(s) = E(X-s | X>s)$; restart when $r(s)>E(X)$.
-//   $
-//     X~U(0,b) => r(s)=frac(b-s,2), quad
-//     X~"Exp"(lambda) => r(s)=frac(1,lambda) \
-//     "Pareto" f_X(x)=2/x^3: r(s)=s, E(X)=2 => "restart when" s>2 \
-//     "Repeated timeout" T: m(T) = frac(E(min(X,T)), P(X<=T))
-//   $
+  // $X$: fresh attempt duration; $s$: elapsed time. Expected remaining time $r(s) = E(X-s | X>s)$; restart when $r(s)>E(X)$.
+  // $
+  //   X~U(0,b) => r(s)=frac(b-s,2), quad
+  //   X~"Exp"(lambda) => r(s)=frac(1,lambda) \
+  //   "Pareto" f_X(x)=2/x^3: r(s)=s, E(X)=2 => "restart when" s>2 \
+  //   "Repeated timeout" T: m(T) = frac(E(min(X,T)), P(X<=T))
+  // $
 
-//   #inline[Problem 2: Uniform Sampling in a Disk]
+  // #inline[Problem 2: Uniform Sampling in a Disk]
 
-//   $R_0$: disk radius; $R$: sampled radial distance; independent $U,V~U(0,1)$.
-//   $
-//     P(R<=r) = frac(r^2,R_0^2), quad
-//     R=R_0 sqrt(U), quad theta=2 pi V, quad
-//     X=R cos theta, quad Y=R sin theta
-//   $
+  // $R_0$: disk radius; $R$: sampled radial distance; independent $U,V~U(0,1)$.
+  // $
+  //   P(R<=r) = frac(r^2,R_0^2), quad
+  //   R=R_0 sqrt(U), quad theta=2 pi V, quad
+  //   X=R cos theta, quad Y=R sin theta
+  // $
 
-//   #inline[Problem 3: Gaussian Pairs / Box-Muller]
+  #inline[Week 6: Problem 3: Gaussian Pairs / Box-Muller]
 
-//   Independent $X,Y~N(0,1)$; independent $U,V~U(0,1)$.
-//   $
-//     f_(X,Y)(x,y) = frac(1,2 pi) e^(-(x^2+y^2)/2), quad
-//     P(R>r) = e^(-r^2/2), quad
-//     R=sqrt(-2 ln U), quad theta=2 pi V \
-//     X = sqrt(-2 ln U) cos(2 pi V), quad
-//     Y = sqrt(-2 ln U) sin(2 pi V)
-//   $
+  Independent $X,Y~N(0,1)$; independent $U,V~U(0,1)$.
+  $
+    R=sqrt(-2 ln U), quad theta=2 pi V quad
+    X = sqrt(-2 ln U) cos(2 pi V), quad
+    Y = sqrt(-2 ln U) sin(2 pi V) quad  \
+    f_(X,Y)(x,y) = frac(1,2 pi) e^(-(x^2+y^2)/2), quad
+    P(R>r) = e^(-r^2/2), quad
+  $
 
-//   #inline[Problem 4: Benford's Law]
+  #inline[Week 6: Problem 4: Benford's Law]
 
-//   Fractional log $U = log_10 X - floor(log_10 X)$, model $U~U(0,1)$. Leading digit $D=d$ iff $log_10 d <= U < log_10(d+1)$:
-//   $
-//     P(D=d) = log_10(d+1)-log_10 d = log_10 (1+frac(1,d)), d=1,dots,9 \
-//     P(D=1) approx 0.301, quad P(D=9) approx 0.046
-//   $
-// ]
+  U be the fractional part of the logarithm of X, $U = log_10 X - floor(log_10 X) ~ U(0,1)$, $D_i$ be the leading digit of $U=i$
+  $
+    P(D=d) = log_10(d+1)-log_10 d = log_10 (1+frac(1,d)) forall d=1,dots,9 \
+    P(a<=D<=b)=log_10((b+1)/a)
+  $
+]
 
 = Sampling and Sampling Distributions
 #concept-block[
   *Sampling is a subset* of the population. Population is the total set of all possible observations of an experiment.
-  - Finite population consist of finite number of observations.
-  - Infinite population consist of infinitely many (countably or uncountably) observations.
+  // - Finite population consist of finite number of observations.
+  // - Infinite population consist of infinitely many (countably or uncountably) observations.
 
   #inline[Random Sampling]
 
@@ -1002,7 +973,7 @@ $
     P(Y > chi^2(n;alpha)) = alpha
   $
 
-  When the *population is normal* $N(mu, sigma^2)$, the ratio of sample variance and population variance follows Chi-square distribution with $n-1$ degrees of freedom.
+  When the population is normal $N(mu, sigma^2)$, the *ratio of sample variance and population variance* follows $chi^2(n-1)$ distribution.
   $
     (n-1) S^2 / sigma^2 = (sum^n_(i=1) (X_i - mu_X)^2) / sigma^2 ~ chi^2(n-1)
   $
@@ -1022,7 +993,7 @@ $
     P(T > t_(n;alpha)) = alpha
   $
 
-  When $X_i$ are i.i.d. $N(mu, sigma^2)$, the ratio of sample mean and sample standard deviation follows Student's $t$-distribution with $n-1$ degrees of freedom. (Used when $sigma$ is unknown and $n$ is small)
+  When $X_i$ are i.i.d. $N(mu, sigma^2)$, the *ratio of sample mean and sample standard deviation* follows $t(n-1)$ distribution. (Used when $n$ is small and $sigma$ is unknown)
   $
     (overline(X) - mu) / (S \/ sqrt(n)) ~ t(n-1)
   $
@@ -1038,9 +1009,10 @@ $
   - $E(F) = n_2 \/ (n_2-2)$ for $n_2 > 2$
   - $V(F) = 2n_2^2 (n_1 + n_2 - 2) \/ (n_1 (n_2-2)^2 (n_2-4))$ for $n_2 > 4$
   // - As $n_1, n_2 -> infinity$, $F -> chi^2(n_1) \/ n_1 \/ chi^2(n_2) \/ n_2$
-  - For $F ~ F(n_1, n_2)$, $(1 \/ F) ~ F(n_2, n_1)$
+  
+  For $F ~ F(n_1, n_2)$, $(1 \/ F) ~ F(n_2, n_1)$
   $
-    P(F > F_(n_1, n_2;alpha)) = alpha \
+    // P(F > F_(n_1, n_2;alpha)) = alpha \
     F_(n_1, n_2; 1 - alpha) = 1 \/ F_(n_2, n_1; alpha)
   $
 ]
