@@ -803,64 +803,70 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
 == Disjoint Memory Allocation
 #concept-block[
-  *Paging* is process of mapping *logical pages* $in$ *logical memory* to *physical frames* $in$ *physical memory*, in disjointed physical memory locations.
+  *Paging* maps *logical pages* $in$ *logical memory* to *physical frames* $in$ *physical memory*, in disjointed physical memory locations.
   
   $
     "Physical Frame" = "PageTable"["LogicalPage"] times 2^"n" "(Frame Size)" + "Offset"
   $
 
-    - Page Table: Maps page number $p=m-n$ to frame number $f$. Size of $2^(m-n)$
-    - Frame size: Size of physical frame and logical page, Size of $2^n$.
-
   #align(center)[
     #image("images/w8/logical-physical-address.png", width: 40%)
   ]
 
-  Key characteristics:
-  - Page table is *stored in PCB*, but requires *two memory access* for every memory reference (one for page table entry, another for actual memory item).
+  - *Page Table*: Maps (_logical_) page number $p$ to (_physical_) frame number $f$. *Stored in PCB*.
+  - *Page Table Entry (PTE)*: Addressed with $m-n$ bits. Total $2^(m-n)$ entries. Each entry consists of:
+    - Frame Number: physical frame address
     - Access Right Bits: indicate if data is writable, readable and executable
     - Valid Bit: Indicate the page is valid for process to access
-  - *Removes external fragmentation*, but may *have internal fragmentation*.
+  - *Frame Size*: Size of physical frame and logical page. Marked with $n$ bits. Size of $2^n$ offset entries.
 
+  Key characteristics:
+  - Requires *2 memory accesses* for every memory reference (1 for reading page table entry, another for loading memory item).
+  - *Removes external fragmentation*, but could not catch *internal fragmentation* (accessing byte within word frame but not used).
   
-  #inline[Translation Look-Aside Buffer (TLB)]
-  *Translation Look-Aside Buffer* (TLB) is *hardware context* of process (flushed when context switch occurs) that *caches a few page table entries*. 
-
-  - `TLB-Hit`: Frame number is retrieved to generate physical address.
-  - `TLB-Miss`: Memory access to access the full page table, update TLB after retrieving frame number.
-
-  #inline[Page Sharing]
-  Page Sharing allows proccesses to share the same physical memory frame in page table, enabling:
-
-  - Shared code page: system code that are used by many processes
-  - Copy-on-write: to allow child processes to share a page until the values is mutated
-
-
   #inline[Segmentation]
-  *Segmentation* seperates memory of a process into different memory segments (e.g. _text, data, heap, stack_) $in$ logical memory space, with each segments identifiable with a segment name and limit.
+  *Segmentation* seperates memory of a process into different memory segments (e.g. _text, data, heap, stack_) $in$ logical memory space, with each segments identifiable with a *segment name*.
 
-  Segment table, identifiable by sgement id, stores the base address and limit of a segment.
+  Segment table, identifiable by sgement id, with each entry stores the *base address* and *limit* of a segment. Catches internal fragmentation error with *Offset < Limit* check.
   
   $
     "Physical Address" = ("SegmentTable"["SegId"]."Base" + "Offset") && "Offset" < "Limit"
   $
+
+  #inline[Translation Look-Aside Buffer (TLB)]
+  *Translation Look-Aside Buffer* (TLB) is *hardware context* of process (flushed when context switch occurs) that *caches a few page table entries*. 
+
+  - `TLB-Hit`: Frame number is retrieved to generate physical address. _Negligible time for memory access_.
+  - `TLB-Miss`: Memory access to load the full page table, check if PTE is valid, update TLB after retrieving frame number.
 
   #inline[Segmentation with Paging]
 
   Store each memory segment in disjointed logical memory pages
 
   #align(center)[#image("images/w8/segmentation-with-paging.png", width: 60%)]
+
+  #inline[Page Sharing]
+  Page Sharing allows proccesses to share the same physical memory frame in page table, enabling:
+
+  - Shared code page: system code that are used by many processes
+  - Copy-on-write: to allow child processes to share a page until the values is mutated
 ]
 
 == Virtual Memory Management
 #concept-block[
-  *Virtual memory* saves to page table entries in secondary storage (e.g harddisk), while the rest are in physical memory.
+  *Virtual memory* saves to page table entries in secondary storage (e.g hard disk), while the rest are in physical memory (i.e. ram).
 
   *Memory resident* refers to page table entry that exists in physical memory, while *non-memory resident* are in secondary storage, `isMemoryResident` stores in page table.
 
-  *Page Fault* when CPU access non-memory resident page (before bringing page into physical memory, aka *Trashing*).
+  *Page Fault* when CPU access non-memory resident page. OS starts:
+  1. *Trashing* with replacement algorithm (remove stale TLB entries)
+  2. Locate page in secondary storage
+  3. Load page to physical frame
+  4. Update PTE
+  5. Update TLB
+  6. Resume execution
 
-  Locality Principles:
+  *Locality Principles*:
   - Temporal Locality: memory address used is likely to be used again.
   - Spatial Locality: memory address close to a used address is likely to be used.
 
@@ -911,19 +917,21 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
   #inline[Frame Allocation]
 
-  Given the full physical memory, how much frame should we allocate for each process affects the trashing.
+  *Frame Allocation* determines amount of frame allocated for each process.
 
-  *Local Replacement*: Fixed frame given for process, local trashing occur.
+  *Local Replacement*: Fixed \# frames given for each process, local trashing occur.
   - Pro: Stable performance between runs
   - Cons: Slow progress if frame is not allocated enough
 
-  *Global Replacement*: Self-adjustment of frame between processes
-  - Pro: Process that needs more frame can get from other
+  *Global Replacement*: Self-adjustment of \# frames between processes
+  - Pros: Process that needs more frames can get from other
   - Cons: Badly behave process can affect others and inconsistent frame allocation from run to run
 
-  *Working Set Model* $W (t, Delta)$ uses a window $Delta$, representing the amount of frame allocated to a process at given time interval $t$
+  *Working Set Model* $W (t, Delta)$ uses a window $Delta$, representing the amount of frames allocated to a process at given time interval $t$
 
-  E.g. when transiental period, increase $Delta$, when persistal period, lower $Delta$
+  E.g. when transiental period (starting up, lots of changes to working set size), increase $Delta$, when persistal period (stable, little changes to working set size), lower $Delta$
+
+  #align(center)[#image("images/w9/working-set.png", width: 80%)]
 ]
 
 = File System
@@ -1030,4 +1038,37 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   #inline[`close()`]
   *`int close(int fd)`* closes `fd`: it becomes *reusable*, kernel *frees associated data structures*. Returns $0$ on success, $-1$ on error.
   - Process termination *automatically closes* all open files
+]
+
+= Power of 2s
+#concept-block[
+  #columns(2)[
+    #inline[Size]
+    #columns(2)[
+    - 8 bits = 1 byte
+    - KB: $2^10$ bytes
+    - MB: $2^20$ bytes
+    #colbreak()
+    - GB: $2^30$ bytes
+    - TB: $2^40$ bytes
+    ]
+    #colbreak()
+    #inline[Time]
+    milli, micro, nano: $10^3$, $10^6$, $10^9$
+    - 1s = $10^3$ ms = $10^6$ $mu$s = $10^9$ ns
+    - 1ms = $10^3$ $mu$s = $10^6$ ns
+    - 1$mu$s = $10^3$ ns
+  ]
+  #align(center)[
+    #table(
+      columns:8,
+      inset: 25%,
+      stroke: 0.5pt,
+      [*0*], [*1*], [*2*], [*3*], [*4*], [*5*], [*6*], [*7*],
+      [0000], [0001], [0010], [0011], [0100], [0101], [0110], [0111],
+      [*8*], [*9*], [*A*], [*B*], [*C*], [*D*], [*E*], [*F*],
+      [1000], [1001], [1010], [1011], [1100], [1101], [1110], [1111],
+    )
+  ]
+
 ]
