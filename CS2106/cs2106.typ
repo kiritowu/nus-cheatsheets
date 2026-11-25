@@ -995,7 +995,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 
   #align(center)[#image("images/w11/file-operation.png", width: 70%)]
   
-  File table storing additional information for an opened file, identifiable by file descriptor, stored in PCB of each process.
+  *File table* storing additional information for an opened file, identifiable by file descriptor, stored in PCB of each process.
   - File Pointer: current location in file
   - Disk Location: Actual file location on disk
   - Open Count: number of processes opening the file
@@ -1039,11 +1039,107 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   *`int close(int fd)`* closes `fd`: it becomes *reusable*, kernel *frees associated data structures*. Returns $0$ on success, $-1$ on error.
   - Process termination *automatically closes* all open files
 ]
+== File System Implementation
+#concept-block[
+  #image("images/w12/disk-organisation.png", width: 80%)
+  *Master Boot Record (MBR)* (sector 0 or partition table), followed by partitions (each with independent file system)
 
-= Power of 2s
+  *File System* generally consists of:
+  - OS Boot up information
+  - Partition details (number of blocks, number and allocation of free disk blocks)
+  - Directory structure
+  - File information
+  - File data
+
+  #inline[File Implementation]
+  File is a collection of logical blocks. File implementation allocates logical block to physical block in hard disk.
+
+  1. Contiguous Allocation: allocate consecutive physical blocks to file
+  - Pros: Fast access time, sequential access
+  - Cons: External fragmentation, file size is known in advanced
+
+  2. Linked List Allocation: Each disk block stores next block address. File information stores first and last disk block number.
+  - Pros: No external fragmentation, file size is not known in advanced
+  - Cons: Random access is slow, part of disk block is used for pointer
+
+  2.1 File Allocation Table (FAT): Store the next block number in FAT table, which recides fully in memory.
+  - Pros: Faster in memory access.
+  - Cons: FAT keep tracks of all disk block, can be huge and consume memory spaces
+
+  3. Indexed Allocation: Each file has index block, which stores the block number of the file data.
+  - Pros: Lesser memory overhead (only opened file is in memory), faster direct access
+  - Cons: Limited maximum file size (capped by index block entries)
+  - Variations:
+    - Uses linked list for index block for larger file size
+    - Multilevel Indexed
+
+  #inline[Free Space Management]
+  File system maintains a free space list (if block is free), allowing Allocate and Free of disk block.
+
+  1. Bitmap: Easy to manipulate, but need stores all in memory
+  2. Linked List: Points to next free block. Only first pointer is stored in memory, but high overhead
+
+  #inline[Directory Structure]
+  How each directory stores the files:
+  1. Linear List: Each directory maintains a list of file name, and (pointer to) file information.
+  2. Hash Table: Locate file by hashing file name to index in hash table.
+
+  File Information:
+  - file name and other metadata
+  - disk block information
+
+  #columns(2)[
+  #inline[File Create]
+
+  1. Use full pathname to locate parent directory
+    1. Search filename $F$ to avoid duplicate. Return error if found.
+  2. Use free space list to find free disk blocks
+  3. Add entry to parent directory, writing file name, file information, disk block information etc.
+
+  #image("images/w12/file-creation.png", width: 100%)
+
+  #colbreak()
+
+  #inline[File Open]
+  1. Search system-wide table for existing entry E for file F:
+    1. If found: create entry in process P's file table; Return pointer to this entry
+  2. Use full pathname to locate file F (from parent directory)
+    1. If not found: terminate with error
+    1. Else: Load file information to system wide table (new entry E)
+    3. Create entry in process P's file table, returning pointer to this entry
+
+  #image("images/w12/file-open.png", width: 100%)
+  ]
+
+  #inline[Disk I/O Scheduling]
+  #align(center)[#image("images/w12/disk-io.png", width: 50%)]
+  $
+    "Time Taken" = "Seek Time" + "Rotational Latency" + "Transfer Time"
+  $
+
+  - *Seek Time*: Average 1/3 N maximum seek distance.
+  - *Rotational Latency*: Average 1/2 rotation time (100 RPM = 60/100/2 = 0.3s = 300ms)
+  - *Transfer Time*: Transfer size / transfer rate
+  - *Transfer Size*: \# Byte / sector \* \# of sectors
+  - *Transfer Rate*: MB / second
+
+  Seek Time + Rotational Latency > Transfer Time
+
+  Few disk scheduling algorithms can be use to reduce seek time:
+  1. FCFS: Seek each track base on request order
+  2. Shortest Seek First (SSF): Bi-direction (SCAN), 1-Direction (C-SCAN)
+
+  #columns(2)[
+    #image("images/w12/disk-fcfs.png")
+    #colbreak()
+    #image("images/w12/disk-ssf.png")
+  ]
+]
+
+= Power of 2s and Quick Maths
 #concept-block[
   #columns(2)[
-    #inline[Size]
+    #inline[File Size]
     #columns(2)[
     - 8 bits = 1 byte
     - KB: $2^10$ bytes
@@ -1059,6 +1155,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
     - 1ms = $10^3$ $mu$s = $10^6$ ns
     - 1$mu$s = $10^3$ ns
   ]
+
+  Hexadecimals:
   #align(center)[
     #table(
       columns:8,
@@ -1068,6 +1166,17 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
       [0000], [0001], [0010], [0011], [0100], [0101], [0110], [0111],
       [*8*], [*9*], [*A*], [*B*], [*C*], [*D*], [*E*], [*F*],
       [1000], [1001], [1010], [1011], [1100], [1101], [1110], [1111],
+    )
+  ]
+
+  Power of 2s:
+  #align(center)[
+    #table(
+      columns:11,
+      inset: 25%,
+      stroke: 0.5pt,
+      [2^*0*], [2^*1*], [2^*2*], [2^*3*], [2^*4*], [2^*5*], [2^*6*], [2^*7*], [2^*8*], [2^*9*], [2^*10*],
+      [1], [2], [4], [8], [16], [32], [64], [128], [256], [512], [1024]
     )
   ]
 
