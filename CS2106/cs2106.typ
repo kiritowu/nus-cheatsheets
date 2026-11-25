@@ -1073,6 +1073,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
     - Uses linked list for index block for larger file size
     - Multilevel Indexed
 
+  #align(center)[#image("images/w12/i-node.png", width: 50%)]
+
   #inline[Free Space Management]
   File system maintains a free space list (if block is free), allowing Allocate and Free of disk block.
 
