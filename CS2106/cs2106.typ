@@ -706,9 +706,18 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - *Independence*: Process in non-CS should never block other process.
 
   Outcome of incorrect CS implementation:
-  - *Deadlock*: All processes blocked and stops exeecution
+  - *Deadlock*: All processes blocked and stops execution
   - *Livelock*: Result of deadlock avoidance mechanism, where processes keep changing state and make no progress
-  - *Starvation*: Some proccesses are blocked forever
+  - *Starvation*: Some processes are blocked forever
+
+  #inline[Total number of interleavings]
+  Atomic steps are operations that cannot be interrupted. (e.g. `x++` has 2 atomic steps: load $x$ + increment $x$, store $x$)
+
+  - Task with $m$ and $n$ *atomic steps*, total number of interleavings
+  $
+    binom(m+n, m) = frac((m+n)!, m!n!) = (a+b+c)! / (a!b!c!)
+  $
+
 
   #inline[Low-Level Implementation: TestAndSet]
 
@@ -719,10 +728,10 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   ExitCS(int* Lock) *Lock=0; // Set lock to 0
   ```
 
-  #inline[Higher level Language: Peterson's Algorithm]
-  #align(center)[
-    #image("images/w6/peterson.png", width: 50%)
-  ]
+  // #inline[Higher level Language: Peterson's Algorithm]
+  // #align(center)[
+  //   #image("images/w6/peterson.png", width: 50%)
+  // ]
 
   #inline[Higher level synchronization: Semaphore]
   Sempahore is an integer $S >= 0$, represent number of jobs that can run concurrently (counting semaphore).
@@ -733,6 +742,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   $
    N_(C S) = \#"Signal"("S") - \#"Wait"("S") quad S_"current" = 1 + N_(C S),quad  N_(C S) <= S_"initial"
   $
+
+  #align(center)[#image("images/tc-cheatsheet/classic-semaphore.png", width: 95%)]
 ]
 
 = Memory Management
@@ -786,6 +797,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - partition de-allocation and coalescing.
   - may result in *external framentation* (gap between partition)
 
+  Two block are buddies if the i-th index are 1 and 0, with left-bits identical.
+
   Initialisation:
   1. Maintain an array $A$ of size $K$ where each i-th element consists of linkedList of free blocks of size $2^i$
   
@@ -824,6 +837,8 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - Requires *2 memory accesses* for every memory reference (1 for reading page table entry, another for loading memory item).
   - *Removes external fragmentation*, but could not catch *internal fragmentation* (accessing byte within word frame but not used).
   
+  #align(center)[#image("images/tc-cheatsheet/paging.png", width: 85%)]
+  
   #inline[Segmentation]
   *Segmentation* seperates memory of a process into different memory segments (e.g. _text, data, heap, stack_) $in$ logical memory space, with each segments identifiable with a *segment name*.
 
@@ -839,11 +854,13 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - `TLB-Hit`: Frame number is retrieved to generate physical address. _Negligible time for memory access_.
   - `TLB-Miss`: Memory access to load the full page table, check if PTE is valid, update TLB after retrieving frame number.
 
+  #align(center)[#image("images/tc-cheatsheet/tlb.png", width: 95%)]
+
   #inline[Segmentation with Paging]
 
   Store each memory segment in disjointed logical memory pages
 
-  #align(center)[#image("images/w8/segmentation-with-paging.png", width: 60%)]
+  #align(center)[#image("images/w8/segmentation-with-paging.png", width: 50%)]
 
   #inline[Page Sharing]
   Page Sharing allows proccesses to share the same physical memory frame in page table, enabling:
@@ -878,7 +895,9 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - Empty entries in page directory is possible
   - Only page directory needs to be in memory
 
-  #align(center)[#image("images/w9/2-level-paging.png", width: 60%)]
+  #align(center)[#image("images/w9/2-level-paging.png", width: 50%)]
+
+  #align(center)[#image("images/tc-cheatsheet/multi-level-pt.png", width: 95%)]
 
   *Inverted Page Table* uses process id and page number, to uniquely identify a frame number.
 
@@ -886,7 +905,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   
   With process id, we can perform some hashing to obtain the physical frame number.
 
-  #align(center)[#image("images/w9/inverted-table.png", width: 60%)]
+  #align(center)[#image("images/w9/inverted-table.png", width: 40%)]
 
   #inline[Page Replacement Algorithms]
   *Page replacement* happens when page fault occurs and physical memory frame is full.
@@ -910,10 +929,11 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - does not suffer from Belady's Anomaly
   - hard to implement using pure counter and stack
 
-  *Second-Chance Page Replacement (CLOCK)* modified a FIFO queue to give second chance to page that are accessed.
+  *Second-Chance Page Replacement (CLOCK)* uses victim pointer (++when page fault) and reference bit (0 initially, 1 when accessed).
 
-  When a page is accessed, reference bit flips to 1.
-  Oldest page has reference bit of 0 => evicted; reference bit of 1 => reference bit to 0
+  When victim pointer lands on page with 1, reference bit = 0 and pointer++ until a page is evicted. When cache hit, victim bit dont move.
+
+  #align(center)[#image("images/tc-cheatsheet/clock.png", width: 95%)]
 
   #inline[Frame Allocation]
 
@@ -941,65 +961,70 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   - high level resource management scheme, enabling
   - Protection between processes and users
   - Sharing between processes and users
-  #align(center)[#image("images/w11/harddisk.png", width: 50%)]
-  #align(center)[#image("images/w11/file-management.png", width: 70%)]
+
+  #table(
+  columns: (30%, 70%),
+  stroke: 0pt,
+  [#align(center)[#image("images/w11/harddisk.png", width: 100%)]],
+  [#align(center)[#image("images/w11/file-management.png", width: 100%)]]
+  )
 ]
 
 == File
 #concept-block[
   *File* consist of Data and Metadata/File Attributes.
   #inline("File Metadata")
-  #align(center)[#image("images/w11/file-metadata.png", width: 70%)]
+  #align(center)[#image("images/w11/file-metadata.png", width: 60%)]
 
-  1. *File Name*
-  - Naming rule for different FS, including file name length, case sensitivity, special symbol, file extension postfix
+  // 1. *File Name*
+  // - Naming rule for different FS, including file name length, case sensitivity, special symbol, file extension postfix
 
-  2. *File Type*
-  - File type has associated sets of file operations.
-  - Distinguishable using file extension in Windows and Magic Number in Unix.
-  - Common file types:
-    - Regular Files: User data (ASCII files, Binary files)
-    - Directories: System files for FS structure
-    - Special Files: character/block oriented
+  // 2. *File Type*
+  // - File type has associated sets of file operations.
+  // - Distinguishable using file extension in Windows and Magic Number in Unix.
+  // - Common file types:
+  //   - Regular Files: User data (ASCII files, Binary files)
+  //   - Directories: System files for FS structure
+  //   - Special Files: character/block oriented
 
-  3. *File Protection*
-  - Control access to information stored in a file.
-  - Type of Access: Read, Write, Execute, Append, Delete, List
-  - Permission Bits: Owner(rwx), Group(r- -), Universe (r- -)
-  - Access Control List:
-  ```bash
-  getfacl exampleDir
-  # file: exampleDir
-  # owner: sooyj
-  # group: compsc
-  user::rwx
-  user:aaron:rwx
-  group::r-x
-  group:cohort17:rwx
-  mask::rwx
-  other::---
-  ```
+  // 3. *File Protection*
+  // - Control access to information stored in a file.
+  // - Type of Access: Read, Write, Execute, Append, Delete, List
+  // - Permission Bits: Owner(rwx), Group(r- -), Universe (r- -)
+  // - Access Control List:
+  // ```bash
+  // getfacl exampleDir
+  // # file: exampleDir
+  // # owner: sooyj
+  // # group: compsc
+  // user::rwx
+  // user:aaron:rwx
+  // group::r-x
+  // group:cohort17:rwx
+  // mask::rwx
+  // other::---
+  // ```
 
-  #inline[File Data]
-  Each file is array of bytes, with offset from the start of file.
+  // #inline[File Data]
+  // Each file is array of bytes, with offset from the start of file.
 
-  File Access Methods:
-  1. Sequential Access: read data in order, starting from beginning
-  2. Random Access:
-    1. Read (Offset): Read operation from position stated
-    2. Seek (Offset): Move to a new location in file
-  3. Direct Access: Allow random access to any record directly, for file with fixed-length records. Useful for large amount of records.
+  // File Access Methods:
+  // 1. Sequential Access: read data in order, starting from beginning
+  // 2. Random Access:
+  //   1. Read (Offset): Read operation from position stated
+  //   2. Seek (Offset): Move to a new location in file
+  // 3. Direct Access: Allow random access to any record directly, for file with fixed-length records. Useful for large amount of records.
 
   #inline[File operation]
   OS provides system calls for file operation.
 
-  #align(center)[#image("images/w11/file-operation.png", width: 70%)]
+  #align(center)[#image("images/w11/file-operation.png", width: 60%)]
   
   *File table* storing additional information for an opened file, identifiable by file descriptor, stored in PCB of each process.
   - File Pointer: current location in file
   - Disk Location: Actual file location on disk
-  - Open Count: number of processes opening the file
-  #align(center)[#image("images/w11/unix-file-descriptor.png", width: 70%)]
+  - Open Count: number of processes opening the file (even after forking)
+  #align(center)[#image("images/w11/unix-file-descriptor.png", width: 50%)]
 ]
 
 == Directory
@@ -1041,7 +1066,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
 ]
 == File System Implementation
 #concept-block[
-  #image("images/w12/disk-organisation.png", width: 80%)
+  #align(center)[#image("images/w12/disk-organisation.png", width: 50%)]
   *Master Boot Record (MBR)* (sector 0 or partition table), followed by partitions (each with independent file system)
 
   *File System* generally consists of:
@@ -1054,26 +1079,31 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   #inline[File Implementation]
   File is a collection of logical blocks. File implementation allocates logical block to physical block in hard disk.
 
-  1. Contiguous Allocation: allocate consecutive physical blocks to file
+  1. *Contiguous Allocation*: allocate consecutive physical blocks to file
   - Pros: Fast access time, sequential access
   - Cons: External fragmentation, file size is known in advanced
 
-  2. Linked List Allocation: Each disk block stores next block address. File information stores first and last disk block number.
-  - Pros: No external fragmentation, file size is not known in advanced
-  - Cons: Random access is slow, part of disk block is used for pointer
+  2. *Linked List Allocation*: Each disk block stores block data and next block address. File information stores first and last disk block number.
+  // - Pros: No external fragmentation, file size is not known in advanced
+  // - Cons: Random access is slow, part of disk block is used for pointer
+  - To access block $i$, need to $i+1$ disk access (suppose 0-indexed block).
 
-  2.1 File Allocation Table (FAT): Store the next block number in FAT table, which recides fully in memory.
-  - Pros: Faster in memory access.
-  - Cons: FAT keep tracks of all disk block, can be huge and consume memory spaces
+  2.1 *File Allocation Table (FAT)*: Store the next block number in FAT table, which recides fully in memory.
+  // - Pros: Faster in memory access.
+  // - Cons: FAT keep tracks of all disk block, can be huge and consume memory spaces
+  - To access block $i$, need 1 disk access (read block), and $i+1$ memory access (read FAT table).
 
-  3. Indexed Allocation: Each file has index block, which stores the block number of the file data.
+  #align(center)[#image("images/tc-cheatsheet/fat.png", width: 80%)]
+
+  3. *Indexed Allocation*: Each file has index block, which stores the block number of the file data.
   - Pros: Lesser memory overhead (only opened file is in memory), faster direct access
   - Cons: Limited maximum file size (capped by index block entries)
   - Variations:
     - Uses linked list for index block for larger file size
-    - Multilevel Indexed
+    - Multilevel Indexing (similar concept to multi-level paging)
+      - To read file from block $i$ in 2-level indexed allocation, we need to read 1 I-Node, 2 Pointer Blocks, and 1 Data Block.
 
-  #align(center)[#image("images/w12/i-node.png", width: 50%)]
+  #align(center)[#image("images/tc-cheatsheet/i-node.png", width: 80%)]
 
   #inline[Free Space Management]
   File system maintains a free space list (if block is free), allowing Allocate and Free of disk block.
@@ -1114,7 +1144,7 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   ]
 
   #inline[Disk I/O Scheduling]
-  #align(center)[#image("images/w12/disk-io.png", width: 50%)]
+  #align(center)[#image("images/w12/disk-io.png", width: 40%)]
   $
     "Time Taken" = "Seek Time" + "Rotational Latency" + "Transfer Time"
   $
@@ -1132,9 +1162,9 @@ Distribute *lottery tickets* for resources (CPU time, I/O devices). At each deci
   2. Shortest Seek First (SSF): Bi-direction (SCAN), 1-Direction (C-SCAN)
 
   #columns(2)[
-    #image("images/w12/disk-fcfs.png")
+    #align(center)[#image("images/w12/disk-fcfs.png", width: 75%)]
     #colbreak()
-    #image("images/w12/disk-ssf.png")
+    #align(center)[#image("images/w12/disk-ssf.png", width: 75%)]
   ]
 ]
 
